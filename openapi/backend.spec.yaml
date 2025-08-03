@@ -1,0 +1,1096 @@
+openapi: 3.0.3
+info:
+  title: Scotiacon Virtual Queue API
+  description: |-
+    Welcome to the Scotiacon Virtual Queue API.
+    
+    ## Events
+    
+    ## Queues
+    
+    ## Tickets
+  contact:
+    email: changeme@example.com
+  version: 1.0.0
+tags:
+  - name: Operations
+  - name: Events
+  - name: Queues
+paths:
+  /ping:
+    get:
+      summary: Check that the service is alive
+      description: Ping
+      operationId: get-ping
+      tags:
+        - Operations
+      responses:
+        '200':
+          description: Pong
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ok"
+  /capabilities:
+    get:
+      summary: Get the current capabilities of the API
+      description:
+      operationId: get-capabilities
+      tags:
+        - Operations
+      responses:
+        '200':
+          $ref: '#/components/responses/CapabilitiesResponse'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
+
+  /event:
+    get:
+      summary: Search for events
+      description: ""
+      operationId: get-events
+      tags:
+        - Events
+      parameters:
+        - in: query
+          name: page[offset]
+          description: The page offset
+          schema:
+            type: integer
+            minimum: 0
+          x-oapi-codegen-extra-tags:
+            path: page[offset]
+        - in: query
+          name: page[size]
+          description: The page size
+          schema:
+            type: integer
+            minimum: 0
+          x-oapi-codegen-extra-tags:
+            path: page[size]
+        - in: query
+          name: filter[name_like]
+          description: Substring match the queue name
+          schema:
+            type: string
+          x-oapi-codegen-extra-tags:
+            path: filter[name_like]
+        - in: query
+          name: filter[start_time_gte]
+          description: Start time is greater then or equal to
+          schema:
+            type: string
+            format: date-time
+          x-oapi-codegen-extra-tags:
+            path: filter[start_time_gte]
+        - in: query
+          name: filter[start_time_lte]
+          description: Start time is less then or equal to
+          schema:
+            type: string
+            format: date-time
+          x-oapi-codegen-extra-tags:
+            path: filter[start_time_lte]
+        - in: query
+          name: filter[invisible]
+          description: Whether to show invisible items in the response
+          schema:
+            type: boolean
+            default: false
+          x-oapi-codegen-extra-tags:
+            path: filter[invisible]
+        - in: query
+          name: sort
+          description: Start time is greater then or equal to
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - start_time
+                - -start_time
+                - end_time
+                - -end_time
+          x-oapi-codegen-extra-tags:
+            path: sort
+      responses:
+        '200':
+          $ref: '#/components/responses/EventsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestProblem'
+    put:
+      summary: Create an event
+      description: ""
+      operationId: put-event
+      tags:
+        - Events
+      requestBody:
+        $ref: '#/components/requestBodies/NewEventRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/EventResponse'
+  /event/{id}:
+    get:
+      summary: Get an event by ID
+      description: ""
+      operationId: get-event-by-id
+      tags:
+        - Events
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the event
+        - in: query
+          name: include
+          description: The list of nested item types to load with this request
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - queue
+          style: form
+          explode: false
+          required: false
+      responses:
+        '200':
+          $ref: '#/components/responses/EventWithRelationsResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+    patch:
+      summary: Update an event by ID
+      description: ""
+      operationId: patch-event-by-id
+      tags:
+        - Events
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the event
+      requestBody:
+        $ref: '#/components/requestBodies/EventUpdateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/EventResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+
+  /queue:
+    get:
+      summary: Get all queues
+      description: ""
+      operationId: get-queues
+      tags:
+        - Queues
+      parameters:
+        - in: query
+          name: page[offset]
+          description: The page offset
+          schema:
+            type: integer
+            minimum: 0
+          x-oapi-codegen-extra-tags:
+            path: page[offset]
+        - in: query
+          name: page[size]
+          description: The page size
+          schema:
+            type: integer
+            minimum: 0
+          x-oapi-codegen-extra-tags:
+            path: page[size]
+        - in: query
+          name: filter[event_id]
+          description: Substring match the queue name
+          schema:
+            type: string
+            format: uuid
+          x-oapi-codegen-extra-tags:
+            path: filter[event_id]
+        - in: query
+          name: filter[invisible]
+          description: Whether to show invisible items in the response
+          schema:
+            type: boolean
+            default: false
+          x-oapi-codegen-extra-tags:
+            path: filter[invisible]
+      responses:
+        '200':
+          $ref: '#/components/responses/QueuesResponse'
+    put:
+      summary: Create a new queue for an event
+      description: ""
+      operationId: put-queue
+      tags:
+        - Queues
+      requestBody:
+        $ref: '#/components/requestBodies/NewQueueRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/QueueResponse'
+  /queue/{id}:
+    get:
+      summary: Get a queue by ID
+      description: ""
+      operationId: get-queue-by-id
+      tags:
+        - Queues
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the event
+        - in: query
+          name: include
+          description: The list of nested item types to load with this request
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - event
+          style: form
+          explode: false
+          required: false
+      responses:
+        '200':
+          $ref: '#/components/responses/QueueWithRelationsResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+    patch:
+      summary: Update a queue by ID
+      description: ""
+      operationId: patch-queue-by-id
+      tags:
+        - Queues
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the event
+      requestBody:
+        $ref: '#/components/requestBodies/QueueUpdateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/QueueResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+
+  /ticket:
+    get:
+      summary: List tickets
+      description:
+      operationId: get-tickets
+      tags:
+        - Tickets
+      parameters:
+        - in: query
+          name: page[offset]
+          description: The page offset
+          schema:
+            type: integer
+            minimum: 0
+          x-oapi-codegen-extra-tags:
+            path: page[offset]
+        - in: query
+          name: page[size]
+          description: The page size
+          schema:
+            type: integer
+            minimum: 0
+          x-oapi-codegen-extra-tags:
+            path: page[size]
+        - in: query
+          name: filter[queue_id]
+          description: The queue ID associated with the ticket
+          schema:
+            type: string
+            format: uuid
+          x-oapi-codegen-extra-tags:
+            path: filter[queue_id]
+        - in: query
+          name: filter[state]
+          description: The state of the ticket
+          schema:
+            type: string
+          x-oapi-codegen-extra-tags:
+            path: filter[state]
+      responses:
+        '200':
+          $ref: '#/components/responses/TicketsResponse'
+    put:
+      summary: Create a ticket
+      description:
+      operationId: put-ticket
+      tags:
+        - Tickets
+      requestBody:
+        $ref: '#/components/requestBodies/NewTicketRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/TicketResponse'
+  /ticket/{id}:
+    get:
+      summary: Get a ticket by ID
+      description:
+      operationId: get-ticket-by-id
+      tags:
+        - Tickets
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the event
+      responses:
+        '200':
+          $ref: '#/components/responses/TicketResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+    patch:
+      summary: Update a ticket
+      description:
+      operationId: patch-ticket-by-id
+      tags:
+        - Tickets
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the event
+      requestBody:
+        $ref: '#/components/requestBodies/TicketUpdateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/TicketWithRelationsResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+        '409':
+          $ref: '#/components/responses/ConflictProblem'
+
+
+components:
+  requestBodies:
+    NewEventRequest:
+      required: true
+      description: A new event
+      content:
+        application/json:
+          schema:
+            required:
+              - name
+              - startTime
+              - endTime
+            properties:
+              name:
+                type: string
+                nullable: false
+              startTime:
+                type: string
+                format: date-time
+                nullable: false
+              endTime:
+                type: string
+                format: date-time
+                nullable: false
+              visibleFrom:
+                type: string
+                format: date-time
+                nullable: false
+    EventUpdateRequest:
+      required: true
+      description: A update to an event
+      content:
+        application/json:
+          schema:
+            properties:
+              name:
+                type: string
+                nullable: false
+              startTime:
+                type: string
+                format: date-time
+                nullable: false
+              endTime:
+                type: string
+                format: date-time
+                nullable: false
+              visibleFrom:
+                type: string
+                format: date-time
+                nullable: false
+    NewQueueRequest:
+      required: true
+      description: A new queue
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NewQueue'
+    QueueUpdateRequest:
+      required: true
+      description: A update to a queue
+      content:
+        application/json:
+          schema:
+            properties:
+              name:
+                type: string
+                nullable: false
+                example: "Dealer's Den (Sat AM)"
+              queueOpenTime:
+                type: string
+                format: date-time
+                nullable: false
+                description: The time at which people can start joining the queue
+                example: "2025-05-02T09:00:00Z"
+              queueCloseTime:
+                type: string
+                format: date-time
+                nullable: false
+                description: The time at which people can no longer join the queue
+                example: "2025-05-02T12:00:00Z"
+              requestOpenTime:
+                type: string
+                format: date-time
+                nullable: false
+                description: The time at which people can start requesting tickets
+                example: "2025-05-01T00:00:00Z"
+              requestCloseTime:
+                type: string
+                format: date-time
+                nullable: false
+                description: The time at which people can no longer request tickets
+                example: "2025-05-02T12:00:00Z"
+    NewTicketRequest:
+      required: true
+      description: A new ticket
+      content:
+        application/json:
+          schema:
+            required:
+              - queueId
+            properties:
+              queueId:
+                type: string
+                format: uuid
+    TicketUpdateRequest:
+      required: true
+      description: Update a ticket
+      content:
+        application/json:
+          schema:
+            properties:
+              state:
+                $ref: '#/components/schemas/TicketState'
+
+  responses:
+    CapabilitiesResponse:
+      description: API capabilities
+      content:
+        application/json:
+          schema:
+            required:
+              - status
+              - user
+            properties:
+              status:
+                $ref: '#/components/schemas/ServerStatus'
+              user:
+                $ref: '#/components/schemas/UserStatus'
+    EventResponse:
+      description: An event
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/Event'
+    EventsResponse:
+      description: A list of events
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+              - total_items
+              - pagination
+            properties:
+              data:
+                type: array
+                nullable: false
+                items:
+                  $ref: '#/components/schemas/Event'
+              total_items:
+                type: integer
+                nullable: false
+                minimum: 0
+                example: 2
+              filter:
+                $ref: '#/components/schemas/EventFilter'
+              sort:
+                $ref: '#/components/schemas/EventSort'
+              pagination:
+                $ref: '#/components/schemas/NumberedPagination'
+    EventWithRelationsResponse:
+      description: An event with related items
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/Event'
+              related:
+                $ref: '#/components/schemas/EventRelated'
+    QueueResponse:
+      description: A queue
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/Queue'
+    QueuesResponse:
+      description: A list of queues
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+              - total_items
+              - pagination
+            properties:
+              data:
+                type: array
+                nullable: false
+                items:
+                  $ref: '#/components/schemas/Queue'
+              filter:
+                $ref: '#/components/schemas/QueueFilter'
+              total_items:
+                type: integer
+                nullable: false
+                minimum: 0
+                example: 2
+              pagination:
+                $ref: '#/components/schemas/NumberedPagination'
+    QueueWithRelationsResponse:
+      description: A queue with related items
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/Queue'
+              related:
+                $ref: '#/components/schemas/QueueRelated'
+    TicketResponse:
+      description: A ticket
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/Ticket'
+    TicketWithRelationsResponse:
+      description: A ticket with related items
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/Ticket'
+              related:
+                $ref: '#/components/schemas/TicketRelated'
+    TicketsResponse:
+      description: A ticket
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+              - total_items
+              - pagination
+            properties:
+              data:
+                type: array
+                nullable: false
+                items:
+                  $ref: '#/components/schemas/Ticket'
+              # filter:
+              #   $ref: '#/components/schemas/TicketFilter'
+              total_items:
+                type: integer
+                nullable: false
+                minimum: 0
+                example: 2
+              pagination:
+                $ref: '#/components/schemas/NumberedPagination'
+    BadRequestProblem:
+      description: Bad request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: http://example.com/problems/bad-request.html
+            status: 400
+            title: "Bad request"
+            detail: "The request made had problems."
+    ConflictProblem:
+      description: Conflict
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: http://example.com/problems/conflict.html
+            status: 409
+            title: "Conflict"
+            detail: "The request conflicts with the current state of the server."
+    UnauthorizedProblem:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: http://example.com/problems/unauthorized.html
+            status: 401
+            title: "Unauthorized"
+            detail: "You did not provide a valid token."
+    ForbiddenProblem:
+      description: Forbidden
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: http://example.com/problems/forbidden.html
+            status: 403
+            title: "Forbidden"
+            detail: "You are not allowed access to this resource or method."
+    NotFoundProblem:
+      description: Not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: http://example.com/problems/not-found.html
+            status: 404
+            title: "Not found"
+            detail: "The resource you are looking for does not exist."
+    UnexpectedProblem:
+      description: Something went wrong
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: http://example.com/problems/something-went-wrong.html
+            status: 500
+            title: "Something went wrong"
+            detail: "An unexpected error occurred with this request"
+
+  schemas:
+    Event:
+      required:
+        - id
+        - name
+        - startTime
+        - endTime
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: false
+          example: "b76b50d5-dc53-4d34-82fb-944a5f80db79"
+        name:
+          type: string
+          nullable: false
+          example: "Dealer's Den"
+        visibleFrom:
+          type: string
+          format: date-time
+          nullable: false
+        startTime:
+          type: string
+          format: date-time
+          nullable: false
+          example: "2025-02-03T09:00:00Z"
+        endTime:
+          type: string
+          format: date-time
+          nullable: false
+          example: "2025-02-04T16:00:00Z"
+    EventFilter:
+      description: Filters for listing events
+      properties:
+        name_like:
+          type: string
+          nullable: false
+          example: "dealers den"
+        start_time_gte:
+          type: string
+          format: date-time
+          nullable: false
+        start_time_lte:
+          type: string
+          format: date-time
+          nullable: false
+        invisible:
+          type: boolean
+          nullable: false
+    EventSort:
+      description: Sorting for listing events
+      type: array
+      items:
+        type: string
+        enum:
+          - "start_time"
+          - "-start_time"
+          - "end_time"
+          - "-end_time"
+    EventRelated:
+      properties:
+        queue:
+          $ref: '#/components/schemas/QueueArray'
+    NumberedPagination:
+      description: A structure to specify pagination response
+      required:
+        - self
+        - first
+        - last
+      properties:
+        self:
+          $ref: '#/components/schemas/NumberedPaginationPointer'
+        first:
+          $ref: '#/components/schemas/NumberedPaginationPointer'
+        last:
+          $ref: '#/components/schemas/NumberedPaginationPointer'
+        prev:
+          $ref: '#/components/schemas/NumberedPaginationPointer'
+        next:
+          $ref: '#/components/schemas/NumberedPaginationPointer'
+    NumberedPaginationPointer:
+      type: object
+      nullable: false
+      required:
+        - size
+        - offset
+      properties:
+        size:
+          type: integer
+          nullable: false
+          minimum: 0
+          example: 20
+        offset:
+          type: integer
+          nullable: false
+          minimum: 0
+          example: 10
+    Problem:
+      description: An RFC 7807 problem object
+      required:
+        - type
+        - status
+        - title
+        - detail
+      properties:
+        type:
+          type: string
+          nullable: false
+          format: uri
+          title: Type
+          description: A URI reference that identifies the problem type
+        status:
+          type: integer
+          nullable: false
+          minimum: 100
+          maximum: 599
+          title: Status
+          description: the HTTP status code generated by the origin server for this occurrence of the problem
+        title:
+          type: string
+          nullable: false
+          title: Title
+          description: A short, human-readable summary of the problem type
+        detail:
+          type: string
+          nullable: false
+          title: Detail
+          description: A human-readable explanation specific to this occurrence of the problem
+        instance:
+          type: string
+          nullable: false
+          format: uri
+          title: Instance
+          description: A URI reference that identifies the specific occurrence of the problem
+      additionalProperties: true
+    ServerStatus:
+      required:
+        - database
+        - api
+      properties:
+        database:
+          $ref: '#/components/schemas/ServiceStatus'
+        api:
+          $ref: '#/components/schemas/ServiceStatus'
+    UserStatus:
+      required:
+        - allowedActions
+      properties:
+        allowedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+    ServiceStatus:
+      type: string
+      nullable: false
+      enum:
+        - "online"
+        - "offline"
+    Action:
+      type: string
+      nullable: false
+      enum:
+        - "event:create"
+        - "event:view"
+        - "event:update"
+        - "event:delete"
+        - "queue:create"
+        - "queue:view"
+        - "queue:update"
+        - "queue:delete"
+        - "queue:request-ticket"
+        - "ticket:view"
+        - "ticket:consume"
+        - "ticket:activate"
+        - "ticket:revoke"
+    BaseQueue:
+      required:
+        - type
+        - id
+        - event_id
+        - name
+        - queueOpenTime
+        - queueCloseTime
+        - requestOpenTime
+        - requestCloseTime
+      properties:
+        type:
+          $ref: '#/components/schemas/QueueType'
+        id:
+          type: string
+          format: uuid
+          nullable: false
+          example: "cf29406a-a51f-4efe-8a33-f7d97d45e5f5"
+        event_id:
+          type: string
+          format: uuid
+          nullable: false
+          example: "cf29406a-a51f-4efe-8a33-f7d97d45e5f5"
+        name:
+          type: string
+          nullable: false
+          example: "Dealer's Den (Sat AM)"
+        visibleFrom:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time where the a queue will be visible
+        queueOpenTime:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time at which people can start joining the queue
+          example: "2025-05-02T09:00:00Z"
+        queueCloseTime:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time at which people can no longer join the queue
+          example: "2025-05-02T12:00:00Z"
+        requestOpenTime:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time at which people can start requesting tickets
+          example: "2025-05-01T00:00:00Z"
+        requestCloseTime:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time at which people can no longer request tickets
+          example: "2025-05-02T12:00:00Z"
+    FirstComeFirstServeWithGapsQueue:
+      allOf:
+        - $ref: '#/components/schemas/BaseQueue'
+        - required:
+            - interval
+          properties:
+            interval:
+              type: integer
+              minimum: 1
+    QueueType:
+      type: string
+      enum:
+        - FirstComeFirstServeWithGapsQueue
+    Queue:
+      oneOf:
+        - $ref: '#/components/schemas/FirstComeFirstServeWithGapsQueue'
+      discriminator:
+        propertyName: type
+        mapping:
+          FirstComeFirstServeWithGapsQueue: '#/components/schemas/FirstComeFirstServeWithGapsQueue'
+    NewQueue:
+      oneOf:
+        - $ref: '#/components/schemas/NewFirstComeFirstServeWithGapsQueue'
+      discriminator:
+        propertyName: "type"
+        mapping:
+          FirstComeFirstServeWithGaps: '#/components/schemas/NewFirstComeFirstServeWithGapsQueue'
+    QueueFilter:
+      description: Filters for listing queues
+      properties:
+        event_id:
+          type: string
+          format: uuid
+          nullable: false
+        invisible:
+          type: boolean
+          nullable: false
+    QueueRelated:
+      properties:
+        event:
+          $ref: '#/components/schemas/Event'
+    BaseNewQueue:
+      required:
+        - type
+        - eventId
+        - name
+        - queueOpenTime
+        - queueCloseTime
+        - requestOpenTime
+        - requestCloseTime
+      properties:
+        type:
+          type: string
+          enum:
+            - FirstComeFirstServeWithGaps
+        eventId:
+          type: string
+          format: uuid
+          nullable: false
+        name:
+          type: string
+          nullable: false
+          example: "Dealer's Den (Sat AM)"
+        visibleFrom:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time where the a queue will be visible
+        queueOpenTime:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time at which people can start joining the queue
+          example: "2025-05-02T09:00:00Z"
+        queueCloseTime:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time at which people can no longer join the queue
+          example: "2025-05-02T12:00:00Z"
+        requestOpenTime:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time at which people can start requesting tickets
+          example: "2025-05-01T00:00:00Z"
+        requestCloseTime:
+          type: string
+          format: date-time
+          nullable: false
+          description: The time at which people can no longer request tickets
+          example: "2025-05-02T12:00:00Z"
+    NewFirstComeFirstServeWithGapsQueue:
+      allOf:
+        - $ref: '#/components/schemas/BaseNewQueue'
+        - properties:
+            interval:
+              type: integer
+              minimum: 1
+              default: 2
+    QueueArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Queue'
+    Ticket:
+      required:
+        - id
+        - name
+        - state
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        state:
+          $ref: '#/components/schemas/TicketState'
+        held_at_position:
+          type: integer
+          minimum: 1
+    TicketState:
+      type: string
+      enum:
+        - Requested
+        - Active
+        - OnHold
+        - Consumed
+        - Revoked
+    TicketRelated:
+      properties:
+        child:
+          $ref: '#/components/schemas/Ticket'
+
+
+
+
