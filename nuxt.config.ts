@@ -8,18 +8,6 @@ export default defineNuxtConfig({
     timeline: { enabled: true },
   },
 
-  build: {
-    transpile: ['vuetify'],
-  },
-
-  vite: {
-    vue: {
-      template: {
-        transformAssetUrls,
-      },
-    },
-  },
-
   modules: [
     '@nuxt/content',
     '@nuxt/eslint',
@@ -33,6 +21,8 @@ export default defineNuxtConfig({
     '@nuxtjs/google-fonts',
     'nuxt-api-party',
     'dayjs-nuxt',
+    '@vueuse/nuxt',
+    'nuxt-qrcode',
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
         // @ts-expect-error
@@ -40,6 +30,18 @@ export default defineNuxtConfig({
       })
     }
   ],
+
+  build: {
+    transpile: ['vuetify'],
+  },
+
+  vite: {
+    vue: {
+      template: {
+        transformAssetUrls,
+      },
+    },
+  },
 
   auth: {
     isEnabled: false,
@@ -71,11 +73,42 @@ export default defineNuxtConfig({
 
   security: {
     hidePoweredBy: true,
-    sri: true
+    sri: true,
+  },
+  routeRules: {
+    '/manage/tickets/scan': {
+      security: {
+        headers: {
+          permissionsPolicy: {
+            'camera': ['self']
+          },
+          contentSecurityPolicy: {
+            'script-src': [
+              "'self'",  // Fallback value, will be ignored by most modern browsers (level 3)
+              "https:", // Fallback value, will be ignored by most modern browsers (level 3)
+              "'unsafe-inline'", // Fallback value, will be ignored by almost any browser (level 2)
+              "'strict-dynamic'", // Strict CSP via 'strict-dynamic', supported by most modern browsers (level 3)
+              "'nonce-{{nonce}}'", // Enables CSP nonce support for scripts in SSR mode, supported by almost any browser (level 2)
+              // nuxt-qrcode
+              "'unsafe-eval'",
+              "https://fastly.jsdelivr.net/npm/zxing-wasm@1.1.3/dist/reader/zxing_reader.wasm"
+            ]
+          }
+        }
+      }
+    }
   },
 
   svgo: {
 
+  },
+
+  qrcode: {
+    options: {
+      radius: 1,
+      blackColor: 'currentColor',
+      whiteColor: 'transparent',
+    },
   },
 
   googleFonts: {

@@ -1,5 +1,10 @@
 <script setup lang="ts">
-
+definePageMeta({
+  title: `Manage tickets`
+})
+useHead({
+  title: `Manage tickets`
+})
 </script>
 
 <template>

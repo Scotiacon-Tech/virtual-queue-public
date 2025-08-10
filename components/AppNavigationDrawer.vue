@@ -88,6 +88,17 @@ const permissions = useAppPermissions()
         <v-list-item-title>Manage Tickets</v-list-item-title>
       </v-list-item>
 
+      <v-list-item
+          v-if="permissions.canManageTickets"
+          color="primary"
+          to="/manage/tickets/scan"
+      >
+        <template v-slot:prepend>
+          <v-icon icon="mdi-camera" />
+        </template>
+        <v-list-item-title>Scan Tickets</v-list-item-title>
+      </v-list-item>
+
       <v-divider class="mb-1"></v-divider>
 
       <v-list-item

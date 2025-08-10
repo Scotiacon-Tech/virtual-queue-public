@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import ApiAlert from "~/components/ApiAlert.vue";
+import {useGetEventById} from "~/composables/api/events";
+
+definePageMeta({
+  title: `Manage event`
+})
+useHead({
+  title: `Manage event`
+})
 
 const route = useRoute();
 let id = route.params.id as string
 
-const {data, error} = await useQueuesBackendData(`/event/{id}`, {
-  path: {id: id},
-})
+const {data, error} = await useGetEventById(id);
 </script>
 
 <template>

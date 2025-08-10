@@ -63,10 +63,10 @@ paths:
             path: page[offset]
         - in: query
           name: page[size]
-          description: The page size
+          description: The page size. A -1 value will load all pages.
           schema:
             type: integer
-            minimum: 0
+            minimum: -1
           x-oapi-codegen-extra-tags:
             path: page[size]
         - in: query
@@ -104,7 +104,6 @@ paths:
           name: sort
           description: Start time is greater then or equal to
           style: form
-          explode: false
           schema:
             type: array
             items:
@@ -157,7 +156,6 @@ paths:
               enum:
                 - queue
           style: form
-          explode: false
           required: false
       responses:
         '200':
@@ -204,10 +202,10 @@ paths:
             path: page[offset]
         - in: query
           name: page[size]
-          description: The page size
+          description: The page size. A -1 value will load all pages.
           schema:
             type: integer
-            minimum: 0
+            minimum: -1
           x-oapi-codegen-extra-tags:
             path: page[size]
         - in: query
@@ -218,14 +216,6 @@ paths:
             format: uuid
           x-oapi-codegen-extra-tags:
             path: filter[event_id]
-        - in: query
-          name: filter[invisible]
-          description: Whether to show invisible items in the response
-          schema:
-            type: boolean
-            default: false
-          x-oapi-codegen-extra-tags:
-            path: filter[invisible]
       responses:
         '200':
           $ref: '#/components/responses/QueuesResponse'
@@ -265,7 +255,6 @@ paths:
               enum:
                 - event
           style: form
-          explode: false
           required: false
       responses:
         '200':
@@ -297,7 +286,7 @@ paths:
   /ticket:
     get:
       summary: List tickets
-      description:
+      description: List tickets
       operationId: get-tickets
       tags:
         - Tickets
@@ -315,22 +304,25 @@ paths:
           description: The page size
           schema:
             type: integer
-            minimum: 0
+            minimum: -1
           x-oapi-codegen-extra-tags:
             path: page[size]
         - in: query
-          name: filter[queue_id]
-          description: The queue ID associated with the ticket
+          name: filter[event_id]
+          description: The event associated with the ticket
           schema:
             type: string
             format: uuid
           x-oapi-codegen-extra-tags:
-            path: filter[queue_id]
+            path: filter[event_id]
         - in: query
           name: filter[state]
           description: The state of the ticket
+          style: form
           schema:
-            type: string
+            type: array
+            items:
+              $ref: '#/components/schemas/TicketState'
           x-oapi-codegen-extra-tags:
             path: filter[state]
       responses:
@@ -338,7 +330,7 @@ paths:
           $ref: '#/components/responses/TicketsResponse'
     put:
       summary: Create a ticket
-      description:
+      description: Create a ticket
       operationId: put-ticket
       tags:
         - Tickets
@@ -362,9 +354,21 @@ paths:
             format: uuid
           required: true
           description: the ID of the event
+        - in: query
+          name: include
+          description: The list of nested item types to load with this request
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - queue
+                - event
+          style: form
+          required: false
       responses:
         '200':
-          $ref: '#/components/responses/TicketResponse'
+          $ref: '#/components/responses/TicketWithRelationsResponse'
         '404':
           $ref: '#/components/responses/NotFoundProblem'
     patch:
@@ -624,6 +628,8 @@ components:
             properties:
               data:
                 $ref: '#/components/schemas/Ticket'
+              related:
+                $ref: '#/components/schemas/TicketRelated'
     TicketWithRelationsResponse:
       description: A ticket with related items
       content:
@@ -992,9 +998,6 @@ components:
           type: string
           format: uuid
           nullable: false
-        invisible:
-          type: boolean
-          nullable: false
     QueueRelated:
       properties:
         event:
@@ -1090,7 +1093,7 @@ components:
       properties:
         child:
           $ref: '#/components/schemas/Ticket'
-
-
-
-
+        queue:
+          $ref: '#/components/schemas/Queue'
+        event:
+          $ref: '#/components/schemas/Event'

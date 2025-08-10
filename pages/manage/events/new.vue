@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import {useCreateEvent} from "~/composables/api/events";
 
+definePageMeta({
+  title: `Create a new event`
+})
+useHead({
+  title: `Create a new event`
+})
+
 const submitDisabled = ref(false);
 const createdEvent = ref<{ id: string, name: string } | null>(null)
 
@@ -31,7 +38,6 @@ function reset() {
 <template>
   <v-main>
     <v-container>
-      <h1 class="text-h4 text-center mb-6">Create a new event</h1>
       <EventForm
           submit-text="Create"
           :allow-reset="true"

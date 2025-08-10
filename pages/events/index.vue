@@ -2,12 +2,18 @@
 import EventSummaryCardSkeleton from "~/components/EventSummaryCardSkeleton.vue";
 import {useEventDataPage} from "~/composables/api/events";
 import {usePagination} from "~/composables/pagination";
+definePageMeta({
+  title: `Events`
+})
+useHead({
+  title: `Events`
+})
+
 const router = useRouter()
 
 let page = usePagination()
-let pageSize = ref(25)
 
-const {data, error, pending} = await useEventDataPage(page, pageSize);
+const {data, error, pending} = await useEventDataPage(page.value, 25);
 
 watch(page, () => {
   router.replace({query: {page: page.value}})
@@ -17,7 +23,6 @@ watch(page, () => {
 <template>
   <v-main>
   <v-container>
-    <h1 class="text-h4 mb-2">Events</h1>
     <v-row dense>
       <v-col v-if="pending" role="list" cols="12">
         <EventSummaryCardSkeleton/>

@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import AppNavigationDrawer from "~/components/AppNavigationDrawer.vue";
+import type {Route} from "next";
+import type {RouteLocation} from "#vue-router";
 
 const drawer = ref<boolean>(false)
+
+const r = useRoute()
+const getTitle = (route: RouteLocation) => (r.meta.title as (string | undefined)) || r.path
+const title = ref<string>();
+title.value = getTitle(r)
+watch(r, (newRoute) => {
+  title.value = getTitle(newRoute)
+})
 </script>
 
 <template>
@@ -10,7 +20,7 @@ const drawer = ref<boolean>(false)
       <v-app-bar density="comfortable">
         <v-app-bar-nav-icon @click="drawer = !drawer" />
 
-        <v-app-bar-title>Queues</v-app-bar-title>
+        <v-app-bar-title tag="h1">{{ title }}</v-app-bar-title>
 
         <v-btn icon>
           <v-badge dot>

@@ -1,78 +1,209 @@
 <script setup lang="ts">
-import {useEventDataPage} from "~/composables/api/events";
-import {usePagination} from "~/composables/pagination";
+import {type Event as ApiEvent, fetchEventDataPage} from "~/composables/api/events";
+import type {DataTableHeader} from "vuetify/framework";
+
+definePageMeta({
+  title: "Manage events"
+})
+useHead({
+  title: "Manage events"
+})
 
 const dayjs = useDayjs();
-const router = useRouter();
+const now = dayjs();
 
-const pageSize = ref(25);
-let page = usePagination()
+const loading = ref(false);
 
-const {data, error} = await useEventDataPage(page, pageSize, {includeInvisible: true});
+const headers = ref<DataTableHeader<ApiEvent>[]>([
+  {
+    title: 'Name',
+    align: 'start',
+    sortable: false,
+    key: 'name',
+    maxWidth: "500"
+  },
+  {
+    title: 'Status',
+    key: 'status',
+    sortable: false,
+  },
+  // {
+  //   title: 'Start Time',
+  //   key: 'startTime',
+  // },
+  // {
+  //   title: 'End Time',
+  //   key: 'endTime',
+  //   value: (item) => isOpen(item.startTime, item.endTime)
+  // },
+  {
+    title: 'Actions',
+    key: 'actions',
+    align: 'end',
+    sortable: false
+  }
+])
 
-function fmtDate(s: string) {
-  return dayjs(s).format('LL LT z');
+type Item = ApiEvent & {status: 'open' | 'closed' }
+const items = ref<Item[]>([])
+const totalItems = ref<number>(0)
+const search = shallowRef<string | undefined>(undefined);
+const searchDebounce = refDebounced(search, 500);
+
+function isOpen(start: string, end: string) {
+  const startTime = dayjs(start)
+  const endTime = dayjs(end)
+  return startTime.isBefore(now) && endTime.isAfter(now)
 }
 
-watch(page, () => {
-  router.replace({query: {page: page.value}})
-})
+async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
+  page: number,
+  itemsPerPage: number,
+  sortBy: { key: string, order: 'asc' | 'desc' }[],
+  groupBy: string,
+  search: string
+}) {
+  console.log({page, itemsPerPage, sortBy, groupBy, search});
+  loading.value = true;
+  try {
+    console.log(sortBy[0])
+    const data = await fetchEventDataPage(
+        page,
+        itemsPerPage,
+        {
+          includeInvisible: true,
+          nameLike: search ? search : undefined
+        }
+    );
+    totalItems.value = data.totalItems
+    items.value = data.data.map(el => ({
+      ...el,
+      status: isOpen(el.startTime, el.endTime) ? 'open' : 'closed',
+    }))
+  } catch (e) {
+
+  } finally {
+    loading.value = false
+  }
+}
+const dialog = ref<boolean>(false)
+const itemToDelete = ref<{ id: string, name: string } | null>(null)
+const deleteConfirm = ref<string>()
+
+function deletePrompt(id: string, name: string) {
+  itemToDelete.value = {id, name}
+  deleteConfirm.value = ""
+  dialog.value = true
+}
+
+function deletePromptCancel() {
+  dialog.value = false
+}
+
+function deletePromptConfirm() {
+  console.log("Deleting", itemToDelete.value)
+  dialog.value = false
+}
 </script>
 
 <template>
   <v-main>
     <v-container>
-      <h1 class="text-h4 mb-5">Manage Events</h1>
-      <v-row>
-        <v-col cols="4">
+      <v-data-table-server
+          :headers="headers"
+          :items="items"
+          :items-length="totalItems"
+          :loading="loading"
+          :search="searchDebounce"
+          item-value="id"
+          @update:options="loadItems"
+          mobile-breakpoint="sm"
+      >
+        <template v-slot:top>
+          <v-row>
+            <v-col>
           <v-btn
               to="/manage/events/new"
-              prepend-icon="mdi-calendar-plus"
-              aria-description="Create a new event">
-            NEW
-          </v-btn>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col>
+              variant="flat"
+              class="me-2"
+              prepend-icon="mdi-plus"
+              text="Create a new Event"
+              color="primary"
+          />
+            </v-col>
+          </v-row>
+
           <v-text-field
-              prepend-inner-icon="mdi-magnify"
+              label="Search by name"
+              v-model="search"
+              class="pa-3 mt-3"
               density="compact"
-              label="Search events"
-              variant="solo"
+              prepend-icon="mdi-magnify"
               hide-details
-              single-line
-              class="mb-2"
           ></v-text-field>
-        </v-col>
-      </v-row>
+        </template>
 
-      <v-col v-if="error">
-        <ApiAlert :problem="error.data"/>
-      </v-col>
+        <template v-slot:item.status="{ item }">
+          <v-chip v-if="item.status == 'open'" rounded color="green">Open</v-chip>
+          <v-chip v-else rounded color="red">Closed</v-chip>
+        </template>
 
-      <p v-if="!data || data.totalItems == 0">Found no events</p>
-      <p v-else-if="data.totalItems == 1">Found 1 event</p>
-      <p v-else>Found {{ data.totalItems }} event</p>
+        <template v-slot:item.actions="{ item }">
+          <div class="d-flex ga-2 justify-end">
+            <v-btn
+                :to="`/manage/events/byid/${item.id}`"
+                :title="`Edit ${item.name}`"
+                append-icon="mdi-pencil"
+                density="default"
+                variant="tonal"
+            >
+              Edit
+            </v-btn>
+            <v-btn
+                :title="`Delete ${item.name}`"
+                append-icon="mdi-delete"
+                density="default"
+                variant="tonal"
+                @click="deletePrompt(item.id, item.name)"
+            >
+              Delete
+            </v-btn>
+          </div>
+        </template>
+      </v-data-table-server>
 
-      <v-list v-if="data">
-        <v-list-item v-for="event in data.data" :key="event.id">
-          <v-list-item-title>{{ event.name }}</v-list-item-title>
-          <v-list-item-subtitle>Opens: {{ fmtDate(event.startTime) }}, Closes: {{ fmtDate(event.endTime) }}</v-list-item-subtitle>
-          <template v-slot:append>
-            <v-btn :to="`/manage/events/byid/${event.id}`">Edit</v-btn>
+      <!-- Delete confirm dialog -->
+      <v-dialog v-model="dialog" max-width="300">
+        <v-card
+            title="Are you sure?"
+            :subtitle="`Do you want to delete &quot;${itemToDelete?.name}&quot;`"
+        >
+          <template v-slot:text>
+            <div class="d-flex flex-column ga-4">
+              <p>
+                If you are sure you want to delete the event
+                "{{ itemToDelete?.name }}", then type <code>delete</code>
+                into the text box.
+              </p>
+              <p>
+                <strong>This action is not reversible</strong>
+              </p>
+              <v-text-field v-model="deleteConfirm" label="Confirm delete" placeholder="delete"/>
+            </div>
           </template>
-        </v-list-item>
-      </v-list>
-      <v-row>
-        <v-col cols="12">
-          <v-pagination
-              v-model="page"
-              :length="data?.totalPages || 0"
-              class="my-2"
-          ></v-pagination>
-        </v-col>
-      </v-row>
+
+          <v-divider></v-divider>
+
+          <v-card-actions class="bg-surface-light">
+            <v-btn text="Cancel" @click="deletePromptCancel"></v-btn>
+
+            <v-spacer></v-spacer>
+
+            <v-btn text="Delete" variant="elevated" color="red-darken-1"
+                   :disabled="deleteConfirm?.toLowerCase() != 'delete'" @click="deletePromptConfirm"></v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-container>
   </v-main>
 </template>

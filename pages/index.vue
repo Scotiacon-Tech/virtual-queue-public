@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import {useEventDataUpcoming} from "~/composables/api/events";
+
+definePageMeta({
+  title: `Queues`
+})
+useHead({
+  title: `Queues`
+})
+
 const {data, error} = await useEventDataUpcoming(3)
 </script>
 
@@ -27,7 +35,7 @@ const {data, error} = await useEventDataUpcoming(3)
                 description="Lorem ipsum dolor sit amet consectetur, adipisicing elit.?"
             />
         </v-col>
-        <v-col v-if="error">
+        <v-col v-else-if="error">
           <v-alert
               type="error"
           >
