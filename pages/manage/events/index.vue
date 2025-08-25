@@ -86,24 +86,6 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
     loading.value = false
   }
 }
-const dialog = ref<boolean>(false)
-const itemToDelete = ref<{ id: string, name: string } | null>(null)
-const deleteConfirm = ref<string>()
-
-function deletePrompt(id: string, name: string) {
-  itemToDelete.value = {id, name}
-  deleteConfirm.value = ""
-  dialog.value = true
-}
-
-function deletePromptCancel() {
-  dialog.value = false
-}
-
-function deletePromptConfirm() {
-  console.log("Deleting", itemToDelete.value)
-  dialog.value = false
-}
 </script>
 
 <template>
@@ -152,58 +134,15 @@ function deletePromptConfirm() {
           <div class="d-flex ga-2 justify-end">
             <v-btn
                 :to="`/manage/events/byid/${item.id}`"
-                :title="`Edit ${item.name}`"
-                append-icon="mdi-pencil"
+                :title="`More information for ${item.name}`"
                 density="default"
                 variant="tonal"
             >
-              Edit
-            </v-btn>
-            <v-btn
-                :title="`Delete ${item.name}`"
-                append-icon="mdi-delete"
-                density="default"
-                variant="tonal"
-                @click="deletePrompt(item.id, item.name)"
-            >
-              Delete
+              More Info
             </v-btn>
           </div>
         </template>
       </v-data-table-server>
-
-      <!-- Delete confirm dialog -->
-      <v-dialog v-model="dialog" max-width="300">
-        <v-card
-            title="Are you sure?"
-            :subtitle="`Do you want to delete &quot;${itemToDelete?.name}&quot;`"
-        >
-          <template v-slot:text>
-            <div class="d-flex flex-column ga-4">
-              <p>
-                If you are sure you want to delete the event
-                "{{ itemToDelete?.name }}", then type <code>delete</code>
-                into the text box.
-              </p>
-              <p>
-                <strong>This action is not reversible</strong>
-              </p>
-              <v-text-field v-model="deleteConfirm" label="Confirm delete" placeholder="delete"/>
-            </div>
-          </template>
-
-          <v-divider></v-divider>
-
-          <v-card-actions class="bg-surface-light">
-            <v-btn text="Cancel" @click="deletePromptCancel"></v-btn>
-
-            <v-spacer></v-spacer>
-
-            <v-btn text="Delete" variant="elevated" color="red-darken-1"
-                   :disabled="deleteConfirm?.toLowerCase() != 'delete'" @click="deletePromptConfirm"></v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </v-container>
   </v-main>
 </template>

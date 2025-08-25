@@ -86,6 +86,15 @@ async function rejoin(id: string) {
     </v-container>
     <v-container v-else>
       <h1 class="header text-h4 mb-2">{{ eventData!.data.name }}</h1>
+
+      <v-img
+          class="bg-grey-lighten-2"
+          height="125"
+          src="https://picsum.photos/350/165?random"
+          cover/>
+      <p class="my-3">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vel lorem sit amet orci mattis interdum eget vitae quam. Aenean lectus turpis, rutrum quis imperdiet et, cursus nec tellus. Nam ipsum ante, malesuada eget risus in, egestas fringilla sapien. Duis ultricies et est et interdum. Vestibulum placerat tortor dolor. Vestibulum suscipit ante sapien. Suspendisse potenti. Vivamus turpis ipsum, tempus at ex eu, maximus dictum justo. Sed sodales, neque nec tincidunt gravida, felis elit lobortis nisl, nec egestas velit lacus non sapien. Aenean tempor odio vitae neque auctor, id rutrum eros pellentesque. In sagittis venenatis diam. Donec scelerisque ultricies elit, scelerisque facilisis libero interdum a.
+      </p>
       <v-divider class="my-6"></v-divider>
       <v-btn block :loading="busyGettingATicket" @click="getATicket">Get a ticket</v-btn>
       <v-row

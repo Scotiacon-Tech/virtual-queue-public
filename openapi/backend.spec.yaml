@@ -117,7 +117,7 @@ paths:
             path: sort
       responses:
         '200':
-          $ref: '#/components/responses/EventsResponse'
+          $ref: '#/components/responses/PaginatedEventsResponse'
         '400':
           $ref: '#/components/responses/BadRequestProblem'
     put:
@@ -218,7 +218,7 @@ paths:
             path: filter[event_id]
       responses:
         '200':
-          $ref: '#/components/responses/QueuesResponse'
+          $ref: '#/components/responses/PaginatedQueuesResponse'
     put:
       summary: Create a new queue for an event
       description: ""
@@ -240,11 +240,11 @@ paths:
       parameters:
         - in: path
           name: id
+          description: the ID of the queue
           schema:
             type: string
             format: uuid
           required: true
-          description: the ID of the event
         - in: query
           name: include
           description: The list of nested item types to load with this request
@@ -282,7 +282,90 @@ paths:
           $ref: '#/components/responses/QueueResponse'
         '404':
           $ref: '#/components/responses/NotFoundProblem'
-
+  /queue/{id}/activate-tickets:
+    post:
+      summary: Mark the first N people in the queue as active
+      description: ""
+      operationId: post-queue-activate-tickets
+      tags:
+        - Queues
+        - Tickets
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the queue
+        - in: query
+          name: include
+          description: The list of nested item types to load with this request
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - ticket
+          style: form
+          required: false
+      requestBody:
+        $ref: '#/components/requestBodies/ActivateTicketsRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/ActivateTicketsResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+  /queue/{id}/latest-activated-tickets:
+    get:
+      summary: Get the most recently activated tickets
+      description: ""
+      operationId: get-queue-latest-activated-tickets
+      tags:
+        - Queues
+        - Tickets
+      parameters:
+        - in: path
+          name: id
+          description: the ID of the queue
+          schema:
+            type: string
+            format: uuid
+          required: true
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 25
+          required: false
+          description: the number of tickets to fetch
+      responses:
+        '200':
+          $ref: '#/components/responses/TicketsResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+  /queue/{id}/ticket-stats:
+    get:
+      summary: Get ticket stats for the queue
+      description: ""
+      operationId: get-queue-ticket-stats
+      tags:
+        - Queues
+        - Tickets
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the queue
+      responses:
+        '200':
+          $ref: '#/components/responses/QueueTicketStatisticsResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
   /ticket:
     get:
       summary: List tickets
@@ -327,7 +410,7 @@ paths:
             path: filter[state]
       responses:
         '200':
-          $ref: '#/components/responses/TicketsResponse'
+          $ref: '#/components/responses/PaginatedTicketsResponse'
     put:
       summary: Create a ticket
       description: Create a ticket
@@ -509,6 +592,20 @@ components:
             properties:
               state:
                 $ref: '#/components/schemas/TicketState'
+    ActivateTicketsRequest:
+      required: true
+      description: Request tickets to activate
+      content:
+        application/json:
+          schema:
+            required:
+              - amount
+            properties:
+              amount:
+                nullable: false
+                type: integer
+                minimum: 1
+                maximum: 1000
 
   responses:
     CapabilitiesResponse:
@@ -534,8 +631,8 @@ components:
             properties:
               data:
                 $ref: '#/components/schemas/Event'
-    EventsResponse:
-      description: A list of events
+    PaginatedEventsResponse:
+      description: A page of events
       content:
         application/json:
           schema:
@@ -582,8 +679,8 @@ components:
             properties:
               data:
                 $ref: '#/components/schemas/Queue'
-    QueuesResponse:
-      description: A list of queues
+    PaginatedQueuesResponse:
+      description: A page of queues
       content:
         application/json:
           schema:
@@ -618,6 +715,16 @@ components:
                 $ref: '#/components/schemas/Queue'
               related:
                 $ref: '#/components/schemas/QueueRelated'
+    QueueTicketStatisticsResponse:
+      description: Ticket statistics for a queue
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/components/schemas/TicketStatistics'
     TicketResponse:
       description: A ticket
       content:
@@ -643,7 +750,20 @@ components:
               related:
                 $ref: '#/components/schemas/TicketRelated'
     TicketsResponse:
-      description: A ticket
+      description: A list of tickets
+      content:
+        application/json:
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                type: array
+                nullable: false
+                items:
+                  $ref: '#/components/schemas/Ticket'
+    PaginatedTicketsResponse:
+      description: A page of tickets
       content:
         application/json:
           schema:
@@ -666,6 +786,19 @@ components:
                 example: 2
               pagination:
                 $ref: '#/components/schemas/NumberedPagination'
+    ActivateTicketsResponse:
+      description: Tickets have been activated
+      content:
+        application/json:
+          schema:
+            properties:
+              related:
+                properties:
+                  ticket:
+                    type: array
+                    nullable: false
+                    items:
+                      $ref: '#/components/schemas/Ticket'
     BadRequestProblem:
       description: Bad request
       content:
@@ -1097,3 +1230,32 @@ components:
           $ref: '#/components/schemas/Queue'
         event:
           $ref: '#/components/schemas/Event'
+    TicketStatistics:
+      required:
+        - Requested
+        - Active
+        - OnHold
+        - Consumed
+        - Revoked
+      properties:
+        Requested:
+          nullable: false
+          type: integer
+          minimum: 0
+        Active:
+          nullable: false
+          type: integer
+          minimum: 0
+        OnHold:
+          nullable: false
+          type: integer
+          minimum: 0
+        Consumed:
+          nullable: false
+          type: integer
+          minimum: 0
+        Revoked:
+          nullable: false
+          type: integer
+          minimum: 0
+

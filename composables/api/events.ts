@@ -1,8 +1,11 @@
 import type {components, operations} from "#nuxt-api-party/queuesBackend";
 export type Event = components['schemas']['Event']
+export type Queue = components['schemas']['Queue']
 export type TicketState = components['schemas']['TicketState']
-type ResponseJSON = components['responses']['EventsResponse']['content']['application/json']
+
+type EventPageResponseJSON = components['responses']['PaginatedEventsResponse']['content']['application/json']
 type NewEvent = components['requestBodies']['NewEventRequest']['content']['application/json']
+
 export type TicketUpdates = {
     state?: TicketState
 }
@@ -12,6 +15,8 @@ type GetEventsOptions = {
 }
 type GetEventOptions = {
     includeQueues?: true
+}
+type GetQueueOptions = {
 }
 type GetTicketByIDOptions = {
     includeQueue?: true
@@ -23,7 +28,7 @@ type GetAllOpenTicketsOptions = {
 
 const dayjs = useDayjs()
 
-const transformPage = (res: ResponseJSON) => {
+const transformPage = (res: EventPageResponseJSON) => {
     const totalPages = Math.floor(res.total_items / res.pagination.self.size) + 1
     const currentPage = (res.pagination.self.offset / res.pagination.self.size) + 1
     return {
@@ -153,4 +158,28 @@ export const fetchUpdateTicket = (ticketId: string, updates: TicketUpdates) => {
         path: {id: ticketId},
         body: updates
     });
+}
+
+export const fetchReleaseTickets = (queueId: string, amount?: number) => {
+    return $queuesBackend('/queue/{id}/activate-tickets', {
+        method: 'post',
+        path: {id: queueId},
+        body: {
+            amount: amount || 25,
+        }
+    })
+}
+
+export const useGetQueue = (id: string, opts?: GetQueueOptions) => {
+    return useQueuesBackendData('/queue/{id}', {
+        method: 'get',
+        path: {id},
+    });
+}
+
+export const useGetQueueTicketStatistics = (id: string) => {
+    return useQueuesBackendData('/queue/{id}/ticket-stats', {
+        method: 'get',
+        path: {id},
+    })
 }

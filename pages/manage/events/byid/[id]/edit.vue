@@ -9,10 +9,15 @@ useHead({
   title: `Manage event`
 })
 
+const router = useRouter();
 const route = useRoute();
 let id = route.params.id as string
 
 const {data, error} = await useGetEventById(id);
+
+function afterSubmit() {
+  router.push(`/manage/events/byid/${id}`);
+}
 </script>
 
 <template>
@@ -25,9 +30,7 @@ const {data, error} = await useGetEventById(id);
       </v-row>
     </v-container>
     <v-container v-else>
-      <EventForm submit-text="Save" v-model="data!.data" />
-      <v-divider class="my-6"></v-divider>
-      <h2>Queues</h2>
+      <EventForm submit-text="Save" v-model="data!.data" @submit="afterSubmit"/>
     </v-container>
   </v-main>
 </template>

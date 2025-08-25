@@ -6,6 +6,7 @@ import {createVuetify, type ThemeDefinition} from 'vuetify'
 import { md1 } from 'vuetify/blueprints'
 
 import colors from 'vuetify/util/colors'
+import {VPie} from "vuetify/labs/VPie";
 
 const theme: ThemeDefinition = {
     dark: false,
@@ -20,6 +21,9 @@ export default defineNuxtPlugin((app) => {
         // ... your configuration
         blueprint: md1,
         ssr: true,
+        components: {
+            VPie
+        }
         // theme: {
         //     themes: {
         //         light: theme
