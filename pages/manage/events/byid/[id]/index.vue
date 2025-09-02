@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import {
   fetchReleaseTickets,
-  type Queue,
   useGetEventById,
-  useGetQueue,
-  useGetQueueTicketStatistics
+  useGetEventTicketStatistics
 } from "~/composables/api/events";
 import ApiAlert from "~/components/ApiAlert.vue";
 import TicketPie from "~/components/TicketPie.vue";
@@ -20,14 +18,8 @@ const dayjs = useDayjs();
 const route = useRoute();
 let id = route.params.id as string
 
-const {data, error} = await useGetEventById(id, {includeQueues: true})
-
-let queues = data.value?.related?.queue;
-const queue = ref<Queue | undefined>(queues ? queues[0] : undefined)
-
-const {data: stats, error: statsError, refresh: refreshStats} = await useGetQueueTicketStatistics(
-    queue.value ? queue.value.id : ""
-)
+const {data, error} = await useGetEventById(id)
+const {data: stats, error: statsError, refresh: refreshStats} = await useGetEventTicketStatistics(id)
 
 const ticketStats = computed<{inQueue: number, onHold: number, active: number, used: number}>(() => {
   if (stats && stats.value && stats.value.data) {
@@ -80,23 +72,16 @@ function releasePromptCancel() {
 }
 
 async function releasePromptConfirm() {
-  if (queue.value === undefined) {
-    console.error("Could not determine queue")
-    return;
-  }
-
-  console.log("Releasing", {eventId: id, queueId: queue.value.id})
-  await fetchReleaseTickets(queue.value.id, releaseTicketsAmount.value)
+  console.log("Releasing", {eventId: id})
+  await fetchReleaseTickets(id, releaseTicketsAmount.value)
   await refreshStats()
   releaseTicketsDialog.value = false
 }
 
 const copyIdText = ref<string>("Copy");
 async function copyIdToClipboard() {
-  if (queue.value !== undefined) {
-    await navigator.clipboard.writeText(queue.value.id)
-    copyIdText.value = "Copied!"
-  }
+  await navigator.clipboard.writeText(id)
+  copyIdText.value = "Copied!"
 }
 
 </script>
@@ -141,7 +126,7 @@ async function copyIdToClipboard() {
         <tbody>
         <tr>
           <th class="row-head pl-1">ID</th>
-          <td>
+          <td class="py-1">
             <span class="queue-id mr-1">{{ data.data.id }}</span>
 
             <v-btn
@@ -156,35 +141,28 @@ async function copyIdToClipboard() {
         </tr>
         <tr>
           <th class="row-head pl-1">Name</th>
-          <td>{{ data.data.name }}</td>
+          <td class="py-1">{{ data.data.name }}</td>
+        </tr>
+        <tr>
+          <th class="row-head pl-1">Description</th>
+          <td class="py-1">{{ data.data.description }}</td>
         </tr>
         <tr>
           <th class="row-head pl-1">Visible from</th>
-          <td>{{ dayjs(data.data.visibleFrom).format('LLL') }}</td>
+          <td class="py-1">{{ data.data.visibleFrom ? dayjs(data.data.visibleFrom).format('LLL') : "Hidden" }}</td>
         </tr>
         <tr>
           <th class="row-head pl-1">Starts at</th>
-          <td>{{ dayjs(data.data.startTime).format('LLL') }}</td>
+          <td class="py-1">{{ dayjs(data.data.startTime).format('LLL') }}</td>
         </tr>
         <tr>
           <th class="row-head pl-1">Ends at</th>
-          <td>{{ dayjs(data.data.endTime).format('LLL') }}</td>
+          <td class="py-1">{{ dayjs(data.data.endTime).format('LLL') }}</td>
         </tr>
         </tbody>
       </v-table>
 
       <h2>Tickets</h2>
-      <v-alert
-          type="error"
-          v-if="queue === undefined"
-      >
-        <v-alert-title>This event does not have a queue associated with it</v-alert-title>
-        <p>
-          This should never happen but you have an event without any queues attached to it. Make sure there is <strong>only</strong>
-          one queue attached to this event.
-        </p>
-      </v-alert>
-
       <TicketPie v-model="ticketStats" />
 
       <div class="d-flex flex-row flex-wrap ga-2 mt-3">
@@ -196,7 +174,7 @@ async function copyIdToClipboard() {
         <v-btn
             append-icon="mdi-send"
             @click="releasePrompt()"
-            :disabled="queue === undefined && ticketStats && ticketStats?.inQueue > 0"
+            :disabled="ticketStats && ticketStats?.inQueue > 0"
         >
           Activate tickets
         </v-btn>

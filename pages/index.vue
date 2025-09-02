@@ -25,7 +25,7 @@ const {data, error} = await useEventDataUpcoming(3)
 
       <h2 class="text-h6 mb-3">Upcoming events (next 3 days)</h2>
       <v-row dense>
-        <v-col v-if="data" role="list" cols="12">
+        <v-col v-if="data && data.data.length > 0" role="list" cols="12">
             <EventSummaryCard
                 v-for="event in data.data"
                 :id="event.id"
@@ -44,7 +44,7 @@ const {data, error} = await useEventDataUpcoming(3)
           </v-alert>
         </v-col>
         <v-col v-else>
-          Ain't nobody here but us chickens.
+          <p>Ain't nobody here but us chickens.</p>
         </v-col>
       </v-row>
       <v-row>

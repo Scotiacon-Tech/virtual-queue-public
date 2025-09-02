@@ -15,21 +15,20 @@ useHead({
 
 const route = useRoute();
 let id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
-const {data: eventData, error: eventError} = await useGetEventById(id, {includeQueues: true})
+const {data: eventData, error: eventError} = await useGetEventById(id)
 
 
 const {data: ticketsData, error: ticketsError, refresh: ticketsRefresh, clear: ticketsClear}  = await useGetAllOpenTicketsForEvent(id, {cache: false})
 
 const busyGettingATicket = ref(false);
 async function getATicket() {
-  const queues = eventData.value?.related?.queue;
+  const eventId = eventData.value?.data.id
   // Assume we always have one queue
-  if (queues && queues.length > 0) {
-    const queueId = queues[0]?.id;
-    console.log("Getting a new ticket", {queueId});
+  if (eventId) {
+    console.log("Getting a new ticket", {eventId});
     try {
       busyGettingATicket.value = true
-      await fetchCreateTicket(queueId)
+      await fetchCreateTicket(eventId)
       await ticketsRefresh({cause: "refresh:manual"})
     } catch (error) {
       console.error("An error occurred trying to create a new ticket", error);
@@ -92,9 +91,7 @@ async function rejoin(id: string) {
           height="125"
           src="https://picsum.photos/350/165?random"
           cover/>
-      <p class="my-3">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vel lorem sit amet orci mattis interdum eget vitae quam. Aenean lectus turpis, rutrum quis imperdiet et, cursus nec tellus. Nam ipsum ante, malesuada eget risus in, egestas fringilla sapien. Duis ultricies et est et interdum. Vestibulum placerat tortor dolor. Vestibulum suscipit ante sapien. Suspendisse potenti. Vivamus turpis ipsum, tempus at ex eu, maximus dictum justo. Sed sodales, neque nec tincidunt gravida, felis elit lobortis nisl, nec egestas velit lacus non sapien. Aenean tempor odio vitae neque auctor, id rutrum eros pellentesque. In sagittis venenatis diam. Donec scelerisque ultricies elit, scelerisque facilisis libero interdum a.
-      </p>
+      <p class="my-3">{{eventData?.data.description}}</p>
       <v-divider class="my-6"></v-divider>
       <v-btn block :loading="busyGettingATicket" @click="getATicket">Get a ticket</v-btn>
       <v-row

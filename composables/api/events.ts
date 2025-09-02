@@ -1,10 +1,10 @@
-import type {components, operations} from "#nuxt-api-party/queuesBackend";
+import type {components} from "#nuxt-api-party/queuesBackend";
 export type Event = components['schemas']['Event']
-export type Queue = components['schemas']['Queue']
 export type TicketState = components['schemas']['TicketState']
 
 type EventPageResponseJSON = components['responses']['PaginatedEventsResponse']['content']['application/json']
 type NewEvent = components['requestBodies']['NewEventRequest']['content']['application/json']
+type EventUpdate = components['requestBodies']['EventUpdateRequest']['content']['application/json']
 
 export type TicketUpdates = {
     state?: TicketState
@@ -13,13 +13,7 @@ type GetEventsOptions = {
     includeInvisible?: true;
     nameLike?: string
 }
-type GetEventOptions = {
-    includeQueues?: true
-}
-type GetQueueOptions = {
-}
 type GetTicketByIDOptions = {
-    includeQueue?: true
     includeEvent?: true
 }
 type GetAllOpenTicketsOptions = {
@@ -81,7 +75,7 @@ export const useEventDataUpcoming = (days?: number) => useQueuesBackendData('/ev
     transform: transformPage
 })
 
-export const useCreateEvent = (newEvent: NewEvent) => useQueuesBackendData('/event', {
+export const fetchCreateEvent = (newEvent: NewEvent) => $queuesBackend('/event', {
     method: 'put',
     body: newEvent,
     headers: {
@@ -90,20 +84,20 @@ export const useCreateEvent = (newEvent: NewEvent) => useQueuesBackendData('/eve
     }
 })
 
-export const useGetEventById = (id: string, opt?: GetEventOptions) => {
-    let query: operations['get-event-by-id']['parameters']['query']
-
-    if (opt?.includeQueues) {
-        query = {
-            ...(query || {}),
-            include: [...(query?.include || []), 'queue']
-        }
+export const fetchUpdateEvent = (id: string, updatedEvent: EventUpdate) => $queuesBackend('/event/{id}', {
+    path: {id},
+    method: 'patch',
+    body: updatedEvent,
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
     }
+})
 
+export const useGetEventById = (id: string) => {
     return useQueuesBackendData('/event/{id}', {
         method: 'get',
         path: {id},
-        query
     });
 }
 
@@ -128,18 +122,15 @@ export const useGetAllOpenTicketsForEvent = (id: string, opts?: GetAllOpenTicket
     }
 })
 
-export const fetchCreateTicket = (queueId: string) => {
+export const fetchCreateTicket = (eventId: string) => {
     return $queuesBackend('/ticket', {
         method: 'put',
-        body: {queueId}
+        body: {eventId}
     })
 }
 
 export const fetchGetTicket = (ticketId: string, opts?: GetTicketByIDOptions) => {
-    let include: ('event' | 'queue')[] = []
-    if (opts?.includeQueue) {
-        include.push('queue')
-    }
+    let include: ('event')[] = []
     if (opts?.includeEvent) {
         include.push('event')
     }
@@ -147,7 +138,7 @@ export const fetchGetTicket = (ticketId: string, opts?: GetTicketByIDOptions) =>
         method: 'get',
         path: {id: ticketId},
         query: {
-            include: include as Readonly<('event' | 'queue')[]>
+            include: include as Readonly<('event')[]>
         }
     });
 }
@@ -160,26 +151,19 @@ export const fetchUpdateTicket = (ticketId: string, updates: TicketUpdates) => {
     });
 }
 
-export const fetchReleaseTickets = (queueId: string, amount?: number) => {
-    return $queuesBackend('/queue/{id}/activate-tickets', {
+export const fetchReleaseTickets = (eventId: string, amount?: number) => {
+    return $queuesBackend('/event/{id}/activate-tickets', {
         method: 'post',
-        path: {id: queueId},
+        path: {id: eventId},
         body: {
             amount: amount || 25,
         }
     })
 }
 
-export const useGetQueue = (id: string, opts?: GetQueueOptions) => {
-    return useQueuesBackendData('/queue/{id}', {
+export const useGetEventTicketStatistics = (eventId: string) => {
+    return useQueuesBackendData('/event/{id}/ticket-stats', {
         method: 'get',
-        path: {id},
-    });
-}
-
-export const useGetQueueTicketStatistics = (id: string) => {
-    return useQueuesBackendData('/queue/{id}/ticket-stats', {
-        method: 'get',
-        path: {id},
+        path: {id: eventId},
     })
 }

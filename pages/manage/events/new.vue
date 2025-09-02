@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {useCreateEvent} from "~/composables/api/events";
+import {fetchCreateEvent} from "~/composables/api/events";
 
 definePageMeta({
   title: `Create a new event`
@@ -11,20 +11,21 @@ useHead({
 const submitDisabled = ref(false);
 const createdEvent = ref<{ id: string, name: string } | null>(null)
 
-async function submit(ev: {
+async function submit(ev: Readonly<{
   name: string
+  description: string
   startTime: string
   endTime: string
   visibleFrom?: string
-}) {
+}>) {
   submitDisabled.value = true
-  const {data} = await useCreateEvent(ev)
+  const {data} = await fetchCreateEvent(ev)
 
-  if (data.value) {
-    console.log("Created new event", {id: data.value.data.id})
+  if (data) {
+    console.log("Created new event", {id: data.id})
     createdEvent.value = {
-      id: data.value.data.id,
-      name: data.value.data.name,
+      id: data.id,
+      name: data.name,
     }
   }
 }
@@ -51,7 +52,7 @@ function reset() {
           <v-alert type="success">
             <v-alert-title>Event "{{ createdEvent.name }}" created</v-alert-title>
             <v-btn class="mt-4" variant="outlined" color="grey-lighten-5"
-                   :to="`/manage/events/byid/${createdEvent.id}`">Edit
+                   :to="`/manage/events/byid/${createdEvent.id}`">View
             </v-btn>
           </v-alert>
         </v-col>

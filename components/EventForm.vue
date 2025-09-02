@@ -7,6 +7,7 @@ import dayjs, {Dayjs} from "dayjs";
 
 type Event = {
   name: string
+  description: string
   startTime: string
   endTime: string
   visibleFrom?: string
@@ -57,6 +58,7 @@ function compareDateAndTime(lDate: Date, lTime: string, rDate: Date, rTime: stri
 
 const schema = yup.object({
   name: yup.string().required('Name is required').label('Name'),
+  description: yup.string().required('Description is required').label('Description'),
   startDate: yup.date()
       .required('Start date is required')
       .label('Start Date'),
@@ -103,6 +105,7 @@ type SchemaT = yup.InferType<typeof schema>;
 
 const initialValues = model.value && {
   name: model.value.name,
+  description: model.value.description,
   startDate: dayjs(model.value.startTime).startOf('day').toDate(),
   startTime: dayjs(model.value.startTime).format('HH:mm'),
   endDate: dayjs(model.value.endTime).startOf('day').toDate(),
@@ -124,6 +127,7 @@ const vuetifyProps = (state: PublicPathState<any>) => ({
 })
 
 const [name, nameProps] = defineField('name', {props: vuetifyProps})
+const [description, descriptionProps] = defineField('description', {props: vuetifyProps})
 const [startDate, startDateProps] = defineField('startDate', {props: vuetifyProps})
 const [startTime, startTimeProps] = defineField('startTime', {props: vuetifyProps})
 const [endDate, endDateProps] = defineField('endDate', {props: vuetifyProps})
@@ -146,6 +150,7 @@ const submit = handleSubmit(async values => {
 
   await emit('submit', {
     name: values.name,
+    description: values.description,
     startTime: start.format('YYYY-MM-DD[T]HH:mm:ssZ'),
     endTime: end.format('YYYY-MM-DD[T]HH:mm:ssZ'),
     visibleFrom: visibleFrom?.format('YYYY-MM-DD[T]HH:mm:ssZ')
@@ -167,6 +172,15 @@ function reset() {
       label="Name"
       class="mx-4"
   ></v-text-field>
+
+  <v-textarea
+      v-model="description"
+      v-bind="descriptionProps"
+      label="Description"
+      name="description"
+      class="mx-4"
+      auto-grow
+  ></v-textarea>
 
   <v-row class="mx-3 mt-4" dense>
     <v-col>
