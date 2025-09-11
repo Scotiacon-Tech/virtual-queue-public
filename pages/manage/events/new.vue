@@ -7,6 +7,7 @@ definePageMeta({
 useHead({
   title: `Create a new event`
 })
+requireAppPermissions(['canCreateEvent'])
 
 const submitDisabled = ref(false);
 const createdEvent = ref<{ id: string, name: string } | null>(null)

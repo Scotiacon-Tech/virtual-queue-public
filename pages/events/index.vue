@@ -2,13 +2,16 @@
 import EventSummaryCardSkeleton from "~/components/EventSummaryCardSkeleton.vue";
 import {useEventDataPage} from "~/composables/api/events";
 import {usePagination} from "~/composables/pagination";
+
 definePageMeta({
   title: `Events`
 })
 useHead({
   title: `Events`
 })
-
+requireAppPermissions([
+    "canDoSomething"
+])
 const router = useRouter()
 
 let page = usePagination()

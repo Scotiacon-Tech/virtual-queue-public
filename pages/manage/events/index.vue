@@ -3,11 +3,14 @@ import {type Event as ApiEvent, fetchEventDataPage} from "~/composables/api/even
 import type {DataTableHeader} from "vuetify/framework";
 
 definePageMeta({
-  title: "Manage events"
+  title: "Manage events",
 })
 useHead({
-  title: "Manage events"
+  title: "Manage events",
 })
+requireAppPermissions(['canManageEvents'])
+const canCreateEvent = hasAppPermissions(['canCreateEvent'])
+const canViewEvent = hasAppPermissions(['canViewEvent'])
 
 const dayjs = useDayjs();
 const now = dayjs();
@@ -111,6 +114,7 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
               prepend-icon="mdi-plus"
               text="Create a new Event"
               color="primary"
+              :disabled="!canCreateEvent"
           />
             </v-col>
           </v-row>
@@ -137,6 +141,7 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
                 :title="`More information for ${item.name}`"
                 density="default"
                 variant="tonal"
+                :disabled="!canViewEvent"
             >
               More Info
             </v-btn>

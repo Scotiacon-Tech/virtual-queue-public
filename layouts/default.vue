@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import AppNavigationDrawer from "~/components/AppNavigationDrawer.vue";
-import type {Route} from "next";
 import type {RouteLocation} from "#vue-router";
 
 const drawer = ref<boolean>(false)
 
 const r = useRoute()
-const getTitle = (route: RouteLocation) => (r.meta.title as (string | undefined)) || r.path
-const title = ref<string>();
-title.value = getTitle(r)
+const getTitle = (route: RouteLocation) => (route.meta.title as (string | undefined)) || route.path
+const title = ref<string>(getTitle(r));
 watch(r, (newRoute) => {
   title.value = getTitle(newRoute)
 })
@@ -36,8 +34,7 @@ watch(r, (newRoute) => {
           v-model="drawer"
       />
 
-      <slot/>
-
+    <slot />
 
     <v-footer class="text-center d-flex flex-column ga-2 py-4">
       <div class="text-caption font-weight-regular opacity-60">

@@ -838,13 +838,21 @@ components:
       enum:
         - "event:create"
         - "event:view"
+        - "event:view-invisible"
+        - "event:view-ticket-stats"
+        - "event:list"
+        - "event:list-invisible"
         - "event:update"
         - "event:delete"
-        - "event:request-ticket"
+        - "ticket:request"
         - "ticket:view"
-        - "ticket:consume"
+        - "ticket:list"
         - "ticket:activate"
+        - "ticket:check-in"
+        - "ticket:place-on-hold"
+        - "ticket:release-hold"
         - "ticket:revoke"
+        - "ticket:consume"
     Ticket:
       required:
         - id
@@ -866,6 +874,7 @@ components:
       enum:
         - Requested
         - Active
+        - CheckedIn
         - OnHold
         - Consumed
         - Revoked
@@ -883,6 +892,7 @@ components:
       required:
         - Requested
         - Active
+        - CheckedIn
         - OnHold
         - Consumed
         - Revoked
@@ -892,6 +902,10 @@ components:
           type: integer
           minimum: 0
         Active:
+          nullable: false
+          type: integer
+          minimum: 0
+        CheckedIn:
           nullable: false
           type: integer
           minimum: 0

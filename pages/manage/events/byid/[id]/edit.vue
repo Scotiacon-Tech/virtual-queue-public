@@ -8,6 +8,7 @@ definePageMeta({
 useHead({
   title: `Manage event`
 })
+requireAppPermissions(['canUpdateEvent'])
 
 const router = useRouter();
 const route = useRoute();

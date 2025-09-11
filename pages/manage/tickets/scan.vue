@@ -12,7 +12,7 @@ useHead({
 const result = ref<{
   id: string
   name: string
-  state: "Requested" | "Active" | "OnHold" | "Consumed" | "Revoked"
+  state: "Requested" | "Active" | "OnHold" | "Consumed" | "Revoked" | "CheckedIn"
   eventName: string,
   heldAtPosition?: number
 } | undefined>()

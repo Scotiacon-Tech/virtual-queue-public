@@ -1,7 +1,9 @@
 <script setup lang="ts">
-const model = defineModel<boolean>()
+import {hasAppPermissions} from "~/composables/permissions";
 
-const permissions = useAppPermissions()
+const model = defineModel<boolean>()
+const canManageEvents = hasAppPermissions(['canManageEvents'])
+const canManageTickets = hasAppPermissions(['canManageTickets'])
 </script>
 
 <template>
@@ -31,7 +33,7 @@ const permissions = useAppPermissions()
           to="/"
       >
         <template v-slot:prepend>
-          <v-icon icon="mdi-home" />
+          <v-icon icon="mdi-home"/>
         </template>
         <v-list-item-title>Home</v-list-item-title>
       </v-list-item>
@@ -41,7 +43,7 @@ const permissions = useAppPermissions()
           to="/events"
       >
         <template v-slot:prepend>
-          <v-icon icon="mdi-calendar-text" />
+          <v-icon icon="mdi-calendar-text"/>
         </template>
         <v-list-item-title>Events</v-list-item-title>
       </v-list-item>
@@ -62,39 +64,39 @@ const permissions = useAppPermissions()
         <v-list-item-title>My Tickets</v-list-item-title>
       </v-list-item>
 
-      <v-divider v-if="permissions.canManageEvents || permissions.canManageTickets"></v-divider>
+      <v-divider v-if="canManageEvents || canManageTickets"></v-divider>
 
-      <v-list-subheader v-if="permissions.canManageEvents || permissions.canManageTickets">Manage</v-list-subheader>
+      <v-list-subheader v-if="canManageEvents || canManageTickets">Manage</v-list-subheader>
 
       <v-list-item
-          v-if="permissions.canManageEvents"
+          v-if="canManageEvents"
           color="primary"
           to="/manage/events"
       >
         <template v-slot:prepend>
-          <v-icon icon="mdi-calendar-edit-outline" />
+          <v-icon icon="mdi-calendar-edit-outline"/>
         </template>
         <v-list-item-title>Manage Events</v-list-item-title>
       </v-list-item>
 
       <v-list-item
-          v-if="permissions.canManageTickets"
+          v-if="canManageTickets"
           color="primary"
           to="/manage/tickets"
       >
         <template v-slot:prepend>
-          <v-icon icon="mdi-ticket" />
+          <v-icon icon="mdi-ticket"/>
         </template>
         <v-list-item-title>Manage Tickets</v-list-item-title>
       </v-list-item>
 
       <v-list-item
-          v-if="permissions.canManageTickets"
+          v-if="canManageTickets"
           color="primary"
           to="/manage/tickets/scan"
       >
         <template v-slot:prepend>
-          <v-icon icon="mdi-camera" />
+          <v-icon icon="mdi-camera"/>
         </template>
         <v-list-item-title>Scan Tickets</v-list-item-title>
       </v-list-item>
@@ -105,7 +107,7 @@ const permissions = useAppPermissions()
           color="primary"
       >
         <template v-slot:prepend>
-          <v-icon icon="mdi-logout" />
+          <v-icon icon="mdi-logout"/>
         </template>
         <v-list-item-title>Log out</v-list-item-title>
       </v-list-item>

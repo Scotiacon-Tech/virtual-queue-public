@@ -8,39 +8,44 @@ import ApiAlert from "~/components/ApiAlert.vue";
 import TicketPie from "~/components/TicketPie.vue";
 
 definePageMeta({
-  title: `Manage event`
+  title: `Manage event`,
 })
 useHead({
   title: `Manage event`
 })
+requireAppPermissions(['canManageEvents', 'canViewEvent'])
+const canViewEvent = hasAppPermissions(['canViewEvent'])
+const canUpdateEvent = hasAppPermissions(['canUpdateEvent'])
+const canDeleteEvent = hasAppPermissions(['canDeleteEvent'])
+const canViewTicketStats = hasAppPermissions(['canViewTicketStats'])
+const canActivateTicket = hasAppPermissions(['canActivateTicket'])
 
 const dayjs = useDayjs();
 const route = useRoute();
 let id = route.params.id as string
 
 const {data, error} = await useGetEventById(id)
-const {data: stats, error: statsError, refresh: refreshStats} = await useGetEventTicketStatistics(id)
 
-const ticketStats = computed<{inQueue: number, onHold: number, active: number, used: number}>(() => {
+const ticketStats = ref<{ inQueue: number, onHold: number, active: number, used: number } | undefined>()
+if (canViewTicketStats) {
+  const {data: stats, error: statsError, refresh: refreshStats} = await useGetEventTicketStatistics(id)
   if (stats && stats.value && stats.value.data) {
     const {Requested, OnHold, Active, Consumed} = stats.value.data;
-    return {
+    ticketStats.value = {
       inQueue: Requested || 0,
       onHold: OnHold || 0,
       active: Active || 0,
       used: Consumed || 0,
     }
   } else {
-    return {
+    ticketStats.value = {
       inQueue: 0,
       onHold: 0,
       active: 0,
       used: 0,
     }
   }
-})
-
-
+}
 
 const deleteDialog = ref<boolean>(false)
 const deleteConfirm = ref<string>()
@@ -101,12 +106,14 @@ async function copyIdToClipboard() {
           <v-btn
               append-icon="mdi-eye-outline"
               :to="`/events/${data.data.id}`"
+              :disabled="!canViewEvent"
           >
             View
           </v-btn>
           <v-btn
               append-icon="mdi-pencil"
               :to="`/manage/events/byid/${data.data.id}/edit`"
+              :disabled="!canUpdateEvent"
           >
             Edit
           </v-btn>
@@ -116,6 +123,7 @@ async function copyIdToClipboard() {
               class="bg-red-darken-3"
               append-icon="mdi-delete"
               @click="deletePrompt()"
+              :disabled="!canDeleteEvent"
           >
             Delete
           </v-btn>
@@ -163,7 +171,7 @@ async function copyIdToClipboard() {
       </v-table>
 
       <h2>Tickets</h2>
-      <TicketPie v-model="ticketStats" />
+      <TicketPie v-if="canViewTicketStats" v-model="ticketStats" />
 
       <div class="d-flex flex-row flex-wrap ga-2 mt-3">
         <v-btn
@@ -174,7 +182,7 @@ async function copyIdToClipboard() {
         <v-btn
             append-icon="mdi-send"
             @click="releasePrompt()"
-            :disabled="ticketStats && ticketStats?.inQueue > 0"
+            :disabled="!canActivateTicket || (ticketStats && ticketStats?.inQueue == 0)"
         >
           Activate tickets
         </v-btn>
