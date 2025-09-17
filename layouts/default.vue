@@ -16,9 +16,9 @@ watch(r, (newRoute) => {
   <div class="page-ribbon">
     <p>PROTOTYPE &mdash; Scotiacon Confidential &mdash; PROTOTYPE</p>
   </div>
-  <v-app>
+  <v-app class="app">
 
-      <v-app-bar density="comfortable">
+      <v-app-bar density="comfortable" class="app-bar">
         <v-app-bar-nav-icon @click="drawer = !drawer" />
 
         <v-app-bar-title tag="h1">{{ title }}</v-app-bar-title>
@@ -36,7 +36,7 @@ watch(r, (newRoute) => {
 
     <slot />
 
-    <v-footer class="text-center d-flex flex-column ga-2 py-4">
+    <v-footer class="app-footer text-center d-flex flex-column ga-2 py-4 bg-transparent">
       <div class="text-caption font-weight-regular opacity-60">
         Phasellus feugiat arcu sapien, et iaculis ipsum elementum sit amet.
         Mauris cursus commodo interdum. Praesent ut risus eget metus luctus
@@ -56,6 +56,20 @@ watch(r, (newRoute) => {
 </template>
 
 <style scoped>
+.app {
+  background-image: var(--v-app-background) !important;
+  background-attachment: fixed;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.app-bar {
+  color: rgb(var(--v-theme-app-bar-color)) !important;
+  background-color: rgb(var(--v-theme-app-bar-background-color)) !important;
+}
+.app-footer {
+  color: rgb(var(--v-theme-app-footer-color)) !important;
+}
+
 .page-ribbon {
   position: fixed;
   display: block;

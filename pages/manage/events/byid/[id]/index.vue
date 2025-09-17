@@ -94,13 +94,16 @@ async function copyIdToClipboard() {
 <template>
   <v-main>
     <v-container v-if="error">
+      <v-sheet class="pa-5" rounded elevation="8">
       <v-row>
         <v-col v-if="error">
           <ApiAlert :problem="error.data" :show-read-more="true"/>
         </v-col>
       </v-row>
+      </v-sheet>
     </v-container>
     <v-container v-else-if="data">
+      <v-sheet class="pa-5" rounded elevation="8">
       <div class="d-flex flex-column flex-sm-row justify-space-between ga-2 mb-3">
         <div class="d-flex flex-row flex-wrap ga-2">
           <v-btn
@@ -256,6 +259,7 @@ async function copyIdToClipboard() {
           </v-card-actions>
         </v-card>
       </v-dialog>
+      </v-sheet>
     </v-container>
   </v-main>
 </template>

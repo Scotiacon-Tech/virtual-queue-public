@@ -40,6 +40,7 @@ function reset() {
 <template>
   <v-main>
     <v-container>
+      <v-sheet class="pa-5" rounded elevation="8">
       <EventForm
           submit-text="Create"
           :allow-reset="true"
@@ -58,6 +59,7 @@ function reset() {
           </v-alert>
         </v-col>
       </v-row>
+      </v-sheet>
     </v-container>
   </v-main>
 </template>

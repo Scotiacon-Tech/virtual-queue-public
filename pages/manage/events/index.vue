@@ -94,6 +94,7 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
 <template>
   <v-main>
     <v-container>
+      <v-sheet class="pa-5" rounded elevation="8">
       <v-data-table-server
           :headers="headers"
           :items="items"
@@ -148,6 +149,7 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
           </div>
         </template>
       </v-data-table-server>
+      </v-sheet>
     </v-container>
   </v-main>
 </template>

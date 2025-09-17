@@ -38,7 +38,7 @@ if (props.openTime !== undefined && props.closeTime !== undefined) {
 </script>
 
 <template>
-  <v-card role="listitem" class="my-4">
+  <v-card role="listitem" elevation="2" rounded class="my-4 card">
       <v-card-title>{{ props.title }}</v-card-title>
       <v-card-subtitle>
         <v-chip v-if="open" color="green" variant="flat" class="mr-1">
@@ -53,5 +53,8 @@ if (props.openTime !== undefined && props.closeTime !== undefined) {
 </template>
 
 <style scoped>
+.card {
+  border-left: 8px solid rgb(var(--v-theme-primary))
+}
 
 </style>

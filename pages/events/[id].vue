@@ -74,6 +74,7 @@ async function rejoin(id: string) {
 <template>
   <v-main>
     <v-container v-if="eventError">
+      <v-sheet class="pa-5" rounded elevation="8">
       <v-col>
         <v-alert
             type="error"
@@ -82,8 +83,10 @@ async function rejoin(id: string) {
           <p>We were unable to load all the events. Reason: {{ eventError.statusMessage }}</p>
         </v-alert>
       </v-col>
+      </v-sheet>
     </v-container>
     <v-container v-else>
+      <v-sheet class="pa-5" rounded elevation="8">
       <h1 class="header text-h4 mb-2">{{ eventData!.data.name }}</h1>
 
       <v-img
@@ -107,6 +110,7 @@ async function rejoin(id: string) {
           </template>
         </TicketView>
       </v-row>
+      </v-sheet>
     </v-container>
   </v-main>
 </template>
