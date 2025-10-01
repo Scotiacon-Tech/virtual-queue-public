@@ -14,20 +14,13 @@ watch(r, (newRoute) => {
 
 <template>
   <div class="page-ribbon">
-    <p>PROTOTYPE &mdash; Scotiacon Confidential &mdash; PROTOTYPE</p>
+    <p  role="presentation">PROTOTYPE &mdash; Scotiacon Confidential &mdash; PROTOTYPE</p>
   </div>
   <v-app class="app">
 
       <v-app-bar density="comfortable" class="app-bar">
         <v-app-bar-nav-icon @click="drawer = !drawer" />
-
         <v-app-bar-title tag="h1">{{ title }}</v-app-bar-title>
-
-        <v-btn icon>
-          <v-badge dot>
-            <v-icon>mdi-ticket</v-icon>
-          </v-badge>
-        </v-btn>
       </v-app-bar>
 
       <AppNavigationDrawer
@@ -49,7 +42,7 @@ watch(r, (newRoute) => {
       </div>
 
       <div>
-        {{ new Date().getFullYear() }} — <strong>Vuetify</strong>
+        {{ new Date().getFullYear() }} — <strong>Scotiacon</strong>
       </div>
     </v-footer>
   </v-app>

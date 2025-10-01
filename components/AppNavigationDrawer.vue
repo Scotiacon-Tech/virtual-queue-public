@@ -57,9 +57,7 @@ const canManageTickets = hasAppPermissions(['canManageTickets'])
           to="/my/tickets"
       >
         <template v-slot:prepend>
-          <v-badge dot>
-            <v-icon icon="mdi-ticket"></v-icon>
-          </v-badge>
+          <v-icon icon="mdi-ticket"></v-icon>
         </template>
         <v-list-item-title>My Tickets</v-list-item-title>
       </v-list-item>

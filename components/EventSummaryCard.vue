@@ -3,7 +3,7 @@ import type {Dayjs} from "dayjs";
 
 const dayjs = useDayjs()
 
-const props = defineProps<{
+const {id, title, description, openTime, closeTime} = defineProps<{
   id: string
   title: string
   description: string
@@ -13,23 +13,23 @@ const props = defineProps<{
 
 let open = false
 let subtitle = ""
-if (props.openTime !== undefined && props.closeTime !== undefined) {
+if (openTime !== undefined && closeTime !== undefined) {
   const now = dayjs()
-  const openTime = dayjs(props.openTime)
-  const closeTime = dayjs(props.closeTime)
+  const openTimeDate = dayjs(openTime)
+  const closeTimeDate = dayjs(closeTime)
 
-  if (now.isBefore(openTime)) {
-    if (now.isSame(openTime, 'day')) {
-      subtitle = `Opens at ${openTime.format('LT')}`
+  if (now.isBefore(openTimeDate)) {
+    if (now.isSame(openTimeDate, 'day')) {
+      subtitle = `Opens at ${openTimeDate.format('LT')}`
     } else {
-      subtitle = `Opens ${openTime.format('LL')}`
+      subtitle = `Opens ${openTimeDate.format('LL')}`
     }
-  } else if (now.isBefore(closeTime)) {
+  } else if (now.isBefore(closeTimeDate)) {
     open = true
-    if (now.isSame(closeTime, 'day')) {
-      subtitle = `Closes at ${closeTime.format('LT')}`
+    if (now.isSame(closeTimeDate, 'day')) {
+      subtitle = `Closes at ${closeTimeDate.format('LT')}`
     } else {
-      subtitle = `Closes ${closeTime.format('LL')}`
+      subtitle = `Closes ${closeTimeDate.format('LL')}`
     }
   } else {
     subtitle = `Closed`
@@ -38,16 +38,22 @@ if (props.openTime !== undefined && props.closeTime !== undefined) {
 </script>
 
 <template>
-  <v-card role="listitem" elevation="2" rounded class="my-4 card">
-      <v-card-title>{{ props.title }}</v-card-title>
+  <v-card
+      class="card"
+      role="listitem"
+      elevation="2"
+      rounded
+      append-icon="mdi-calendar-text"
+      :title="title"
+  >
       <v-card-subtitle>
         <v-chip v-if="open" color="green" variant="flat" class="mr-1">
           Open
         </v-chip>
         {{ subtitle }}</v-card-subtitle>
-      <v-card-text>{{ props.description }}</v-card-text>
+      <v-card-text>{{ description }}</v-card-text>
       <v-card-actions>
-        <v-btn :to="`/events/${id}`">More Info</v-btn>
+        <v-btn :to="`/events/${id}`" variant="outlined">More Info</v-btn>
       </v-card-actions>
   </v-card>
 </template>

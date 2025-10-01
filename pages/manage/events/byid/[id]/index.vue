@@ -138,7 +138,7 @@ async function copyIdToClipboard() {
         <tr>
           <th class="row-head pl-1">ID</th>
           <td class="py-1">
-            <span class="queue-id mr-1">{{ data.data.id }}</span>
+            <span class="event-id mr-1">{{ data.data.id }}</span>
 
             <v-btn
                 class="my-1"
@@ -179,6 +179,7 @@ async function copyIdToClipboard() {
       <div class="d-flex flex-row flex-wrap ga-2 mt-3">
         <v-btn
             append-icon="mdi-account"
+            :to="`/manage/tickets?eventId=${id}`"
         >
           View tickets
         </v-btn>
@@ -269,7 +270,7 @@ async function copyIdToClipboard() {
   width: 120px;
   max-width: 120px;
 }
-.queue-id {
+.event-id {
   max-height: 1lh;
   text-overflow: ellipsis;
   white-space: nowrap;

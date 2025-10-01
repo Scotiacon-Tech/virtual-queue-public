@@ -91,6 +91,22 @@ paths:
           x-oapi-codegen-extra-tags:
             path: filter[start_time_lte]
         - in: query
+          name: filter[end_time_gte]
+          description: End time is greater then or equal to
+          schema:
+            type: string
+            format: date-time
+          x-oapi-codegen-extra-tags:
+            path: filter[end_time_gte]
+        - in: query
+          name: filter[end_time_lte]
+          description: End time is less then or equal to
+          schema:
+            type: string
+            format: date-time
+          x-oapi-codegen-extra-tags:
+            path: filter[end_time_lte]
+        - in: query
           name: filter[invisible]
           description: Whether to show invisible items in the response
           schema:
@@ -276,6 +292,17 @@ paths:
           x-oapi-codegen-extra-tags:
             path: page[size]
         - in: query
+          name: include
+          description: The list of nested item types to load with this request
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - event
+          style: form
+          required: false
+        - in: query
           name: filter[event_id]
           description: The event associated with the ticket
           schema:
@@ -293,6 +320,21 @@ paths:
               $ref: '#/components/schemas/TicketState'
           x-oapi-codegen-extra-tags:
             path: filter[state]
+        - in: query
+          name: filter[owner]
+          description: The user of the ticket
+          schema:
+            type: string
+          x-oapi-codegen-extra-tags:
+            path: filter[owner]
+        - in: query
+          name: filter[name]
+          description: The name of the ticket
+          schema:
+            type: string
+          x-oapi-codegen-extra-tags:
+            path: filter[name]
+
       responses:
         '200':
           $ref: '#/components/responses/PaginatedTicketsResponse'
@@ -307,6 +349,12 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/TicketResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenProblem'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+        '409':
+          $ref: '#/components/responses/ConflictProblem'
   /ticket/{id}:
     get:
       summary: Get a ticket by ID
@@ -357,6 +405,27 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/TicketWithRelationsResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+        '409':
+          $ref: '#/components/responses/ConflictProblem'
+    delete:
+      summary: Revoke a ticket
+      description:
+      operationId: delete-ticket-by-id
+      tags:
+        - Tickets
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the event
+      responses:
+        '204':
+          description: Ticket revoked
         '404':
           $ref: '#/components/responses/NotFoundProblem'
         '409':
@@ -440,7 +509,7 @@ components:
           schema:
             properties:
               state:
-                $ref: '#/components/schemas/TicketState'
+                $ref: '#/components/schemas/UpdateTicketState'
     ActivateTicketsRequest:
       required: true
       description: Request tickets to activate
@@ -589,6 +658,8 @@ components:
                 example: 2
               pagination:
                 $ref: '#/components/schemas/NumberedPagination'
+              related:
+                $ref: '#/components/schemas/ListTicketsRelated'
     ActivateTicketsResponse:
       description: Tickets have been activated
       content:
@@ -856,20 +927,40 @@ components:
     Ticket:
       required:
         - id
+        - eventId
         - name
         - state
+        - owner
       properties:
         id:
+          type: string
+          format: uuid
+        eventId:
           type: string
           format: uuid
         name:
           type: string
         state:
           $ref: '#/components/schemas/TicketState'
-        held_at_position:
+        owner:
+          type: string
+        heldAtPosition:
           type: integer
           minimum: 1
+        expires:
+          type: string
+          format: date-time
     TicketState:
+      type: string
+      enum:
+        - Requested
+        - Active
+        - Expired
+        - CheckedIn
+        - OnHold
+        - Consumed
+        - Revoked
+    UpdateTicketState:
       type: string
       enum:
         - Requested
@@ -877,7 +968,6 @@ components:
         - CheckedIn
         - OnHold
         - Consumed
-        - Revoked
     TicketArray:
       type: array
       items:
@@ -921,4 +1011,10 @@ components:
           nullable: false
           type: integer
           minimum: 0
+    ListTicketsRelated:
+      properties:
+        event:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
 

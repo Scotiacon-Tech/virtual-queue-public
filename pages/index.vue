@@ -14,6 +14,7 @@ onMounted(() => {
   ])
 })
 const canListEvents = hasAppPermissions(['canListEvents'])
+const canListTickets = hasAppPermissions(['canListTickets'])
 
 </script>
 
@@ -28,7 +29,8 @@ const canListEvents = hasAppPermissions(['canListEvents'])
           </v-col>
         </v-row>
 
-        <h2 v-if="canListEvents" class="text-h6 mb-3">Upcoming events (next 3 days)</h2>
+        <ActiveTickets v-if="canListTickets"/>
+        <v-divider class="my-6"></v-divider>
         <UpcomingEvents v-if="canListEvents" />
       </v-sheet>
     </v-container>
@@ -43,6 +45,10 @@ const canListEvents = hasAppPermissions(['canListEvents'])
     line-height: 1.05;
     letter-spacing: normal;
   }
-  .logo {
+  .logo svg {
+    color: rgb(var(--v-theme-primary));
+  }
+  .logo h1 {
+    color: rgb(var(--v-theme-primary));
   }
 </style>
