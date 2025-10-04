@@ -37,7 +37,6 @@ const allEvents = await fetchGetAllEvents();
 const eventFromUrl = eventIdFromUrl ? allEvents.data.find(x => x.id === eventIdFromUrl) : undefined;
 
 const dayjs = useDayjs();
-const now = dayjs();
 
 const loading = ref(false);
 
@@ -90,11 +89,11 @@ const totalItems = ref<number>(0)
 const filterEvent = shallowRef<Event | undefined>(eventFromUrl);
 const filterTicketNumber = shallowRef<string | undefined>(undefined);
 const filterOwner = shallowRef<string | undefined>(undefined);
-const filterState = shallowRef<TicketState[] | undefined>(undefined);
+const filterState = shallowRef<TicketState[] | undefined>(['Active', 'Requested']);
 
 const filter = shallowRef<Partial<{ eventId: string, ticketNumber: string, owner: string, state: TicketState[] }> | undefined>(undefined);
 const filtersEnabled = ref<number>(0)
-const filterDebounce = debouncedRef(filter, 1000);
+const filterThrottle = throttledRef(filter, 1000);
 const filterLastChanged = ref<string>()
 watch([filterEvent, filterTicketNumber, filterOwner, filterState], () => {
   console.log({filterEvent, filterTicketNumber, filterOwner, filterState});
@@ -110,7 +109,7 @@ watch([filterEvent, filterTicketNumber, filterOwner, filterState], () => {
       (filterOwner.value && filterOwner.value !== "" ? 1 : 0) +
       (filterState.value && filterState.value.length > 0 ? 1 : 0)
 }, {immediate: true})
-watch([filterDebounce], () => {
+watch([filterThrottle], () => {
   filterLastChanged.value = String(Date.now())
 })
 
@@ -131,7 +130,7 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
   console.log({page, itemsPerPage, sortBy, groupBy, search});
   loading.value = true;
   try {
-    const {eventId, ticketNumber, owner, state} = filterDebounce.value ?? {}
+    const {eventId, ticketNumber, owner, state} = filterThrottle.value ?? {}
     const data = await fetchTicketDataPage(
         page,
         itemsPerPage,
@@ -208,7 +207,7 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
                       multiple
                       v-model="filterState"
                       label="States"
-                      :items="['Requested', 'Active', 'CheckedIn', 'OnHold', 'Consumed', 'Revoked'] satisfies TicketState[]"
+                      :items="['Requested', 'Active', 'CheckedIn', 'OnHold', 'Consumed', 'Expired', 'Revoked'] satisfies TicketState[]"
                   ></v-combobox>
 
                   <v-btn @click="clearFilters">

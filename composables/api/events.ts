@@ -265,6 +265,13 @@ export const fetchUpdateTicket = (ticketId: string, updates: TicketUpdates) => {
     });
 }
 
+export const fetchDeleteTicket = (ticketId: string) => {
+    return $queuesBackend("/ticket/{id}", {
+        method: 'delete',
+        path: {id: ticketId},
+    });
+}
+
 export const fetchReleaseTickets = (eventId: string, amount?: number) => {
     return $queuesBackend('/event/{id}/activate-tickets', {
         method: 'post',

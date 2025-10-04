@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {useGetTicketById} from "~/composables/api/events";
+import {fetchDeleteTicket, fetchUpdateTicket, useGetTicketById} from "~/composables/api/events";
 
 definePageMeta({
   title: `Manage ticket`,
@@ -14,13 +14,28 @@ const dayjs = useDayjs();
 const route = useRoute();
 let id = route.params.id as string
 
-const {data, error} = await useGetTicketById(id, {includeEvent: true})
+const {data, refresh, error} = await useGetTicketById(id, {includeEvent: true})
 
 
 const copyIdText = ref<string>("Copy");
 async function copyIdToClipboard() {
   await navigator.clipboard.writeText(id)
   copyIdText.value = "Copied!"
+}
+
+const revokeDialog = ref(false)
+async function revokeDialogConfirm() {
+  try {
+    await fetchDeleteTicket(id)
+    await refresh()
+  } catch (error) {
+    console.error('Could not revoke ticket', error)
+  } finally {
+    revokeDialog.value = false
+  }
+}
+function revokeDialogCancel() {
+  revokeDialog.value = false
 }
 </script>
 
@@ -50,6 +65,13 @@ async function copyIdToClipboard() {
             <td class="py-1">
               <span class="mr-1">{{ data.event!.name }}</span>
 
+              <v-btn
+                  class="my-1"
+                  size="x-small"
+                  :to="`/manage/events/byid/${data.eventId}`"
+              >
+                Go to
+              </v-btn>
             </td>
           </tr>
           <tr>
@@ -64,6 +86,11 @@ async function copyIdToClipboard() {
             <th class="row-head pl-1">Status</th>
             <td class="py-1">{{ data.stateDescription }}</td>
           </tr>
+          <tr v-if="data.state === 'Active'">
+            <th class="row-head pl-1">Expires at</th>
+            <td v-if="data.expires" class="py-1">{{ dayjs(data.expires).format('LLL')}}</td>
+            <td v-else class="py-1">Never</td>
+          </tr>
           </tbody>
         </v-table>
 
@@ -73,20 +100,42 @@ async function copyIdToClipboard() {
         </div>
 
         <v-btn
-            class="my-4"
-            block
-            :to="`/manage/events/byid/${data.eventId}`"
+          class="my-4"
+          block
+          :disabled="data.state !== 'Active' || (data.state === 'Active' && !data.expires)"
         >
-          Go to event
+          Set Expiry to Now + 1 Hour
         </v-btn>
         <v-btn
             class="my-4"
             block
             color="red"
             :disabled="data.state === 'Revoked'"
+            @click="revokeDialog = true"
         >
           Revoke
         </v-btn>
+        <!-- Revoke dialog -->
+        <v-dialog v-model="revokeDialog" max-width="600">
+          <v-card
+              title="Revoke ticket"
+              :subtitle="`Do you want to revoke the ticket for ${data!.owner}?`"
+          >
+            <template v-slot:text>
+              <div class="d-flex flex-column ga-4">
+                <p>
+                  This will make this ticket unusable. Another ticket can be requested.
+                </p>
+              </div>
+            </template>
+
+            <v-card-actions class="bg-surface-light">
+              <v-btn text="Cancel" @click="revokeDialogCancel"></v-btn>
+              <v-spacer></v-spacer>
+              <v-btn text="Revoke" color="red" variant="elevated" @click="revokeDialogConfirm"></v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-sheet>
     </v-container>
   </v-main>

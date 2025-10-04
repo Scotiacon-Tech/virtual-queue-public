@@ -67,11 +67,18 @@ onBeforeUnmount(() => {
             In queue
           </v-chip>
           <v-chip
-              v-if="ticket.state === 'Active'"
+              v-if="ticket.state === 'Active' && expiresStr"
               color="success"
               variant="elevated"
           >
             Valid until {{ expiresStr }}
+          </v-chip>
+          <v-chip
+              v-if="ticket.state === 'Active' && !expiresStr"
+              color="success"
+              variant="elevated"
+          >
+            Valid
           </v-chip>
           <v-chip
               v-if="ticket.state === 'Expired'"
