@@ -76,7 +76,8 @@ export default defineNuxtConfig({
     sri: true,
   },
   routeRules: {
-    '/manage/tickets/scan': {
+    '/manage/tickets/scan/event/**': {
+      ssr: false,
       security: {
         headers: {
           permissionsPolicy: {

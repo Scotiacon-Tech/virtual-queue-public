@@ -1,8 +1,6 @@
 import type {components} from "#nuxt-api-party/queuesBackend";
 
 export type Event = components['schemas']['Event']
-export type TicketState = components['schemas']['TicketState']
-export type UpdateTicketState = components['schemas']['UpdateTicketState']
 
 type EventPageResponseJSON = components['responses']['PaginatedEventsResponse']['content']['application/json']
 type TicketPageResponseJSON = components['responses']['PaginatedTicketsResponse']['content']['application/json']
@@ -113,6 +111,10 @@ const ticketStateDescription = (t: components['schemas']['Ticket']) => {
 
 export type TicketPage = ReturnType<typeof transformTicketPage>
 export type Ticket = ReturnType<typeof transformTicket>
+export type TicketItem = ReturnType<typeof transformTicketItem>
+export type TicketRelated = components['schemas']['TicketRelated']
+export type TicketState = components['schemas']['TicketState']
+export type UpdateTicketState = components['schemas']['UpdateTicketState']
 
 export const fetchEventDataPage = async (pageOffset: number, pageSize: number, opts?: GetEventsOptions) => {
     let res = await $queuesBackend('/event', {
@@ -254,7 +256,7 @@ export const fetchGetTicket = (ticketId: string, opts?: GetTicketByIDOptions) =>
         query: {
             include: include as Readonly<('event')[]>
         }
-    });
+    }).then(transformTicketItem);
 }
 
 export const fetchUpdateTicket = (ticketId: string, updates: TicketUpdates) => {
@@ -262,14 +264,14 @@ export const fetchUpdateTicket = (ticketId: string, updates: TicketUpdates) => {
         method: 'patch',
         path: {id: ticketId},
         body: updates
-    });
+    }).then(transformTicketItem);
 }
 
 export const fetchDeleteTicket = (ticketId: string) => {
     return $queuesBackend("/ticket/{id}", {
         method: 'delete',
         path: {id: ticketId},
-    });
+    }).then(transformTicketItem);
 }
 
 export const fetchReleaseTickets = (eventId: string, amount?: number) => {
