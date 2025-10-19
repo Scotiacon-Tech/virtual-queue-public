@@ -44,10 +44,10 @@ export default defineNuxtConfig({
   },
 
   auth: {
-    isEnabled: false,
+    isEnabled: !!process.env.AUTH_BASE_URL,
     disableServerSideAuth: false,
     originEnvKey: 'AUTH_ORIGIN',
-    baseURL: 'http://localhost:3000/api/auth',
+    baseURL: `${process.env.AUTH_BASE_URL}`,
     provider: { /* your provider config */ },
     sessionRefresh: {
       enablePeriodically: true,
@@ -61,7 +61,7 @@ export default defineNuxtConfig({
     },
     endpoints: {
       queuesBackend: {
-        url: 'http://localhost:8000',
+        url: process.env.API_BASE_URL ?? 'http://localhost:8000',
         schema: 'openapi/backend.spec.yaml',
       }
     },
