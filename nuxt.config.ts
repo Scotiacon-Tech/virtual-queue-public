@@ -15,7 +15,6 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxt/image',
     '@nuxt/test-utils',
-    '@sidebase/nuxt-auth',
     'nuxt-security',
     'nuxt-svgo',
     '@nuxtjs/google-fonts',
@@ -41,18 +40,6 @@ export default defineNuxtConfig({
         transformAssetUrls,
       },
     },
-  },
-
-  auth: {
-    isEnabled: !!process.env.AUTH_BASE_URL,
-    disableServerSideAuth: false,
-    originEnvKey: 'AUTH_ORIGIN',
-    baseURL: `${process.env.AUTH_BASE_URL}`,
-    provider: { /* your provider config */ },
-    sessionRefresh: {
-      enablePeriodically: true,
-      enableOnWindowFocus: true,
-    }
   },
 
   apiParty: {
