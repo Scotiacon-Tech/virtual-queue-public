@@ -22,12 +22,13 @@ export default defineNuxtConfig({
     'dayjs-nuxt',
     '@vueuse/nuxt',
     'nuxt-qrcode',
+    'nuxt-oidc-auth',
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
         // @ts-expect-error
         config.plugins.push(vuetify({ autoImport: true }))
       })
-    }
+    },
   ],
 
   build: {
@@ -42,6 +43,20 @@ export default defineNuxtConfig({
     },
   },
 
+  oidc: {
+    defaultProvider: 'keycloak',
+    providers: {
+      keycloak: {
+        audience: 'account',
+        baseUrl: '', // env var NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL=http://localhost:8080/realms/nuxt-oidc-test
+        clientId: '', // env var NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID=CLIENT_ID
+        clientSecret: '', // env var NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET=CLIENT_SECRET
+        redirectUri: 'http://localhost:3000/auth/keycloak/callback',
+        exposeAccessToken: true,
+      },
+    },
+  },
+
   apiParty: {
     server: {
       basePath: '/_proxy/'
@@ -50,6 +65,7 @@ export default defineNuxtConfig({
       queuesBackend: {
         url: process.env.API_BASE_URL ?? 'http://localhost:8000',
         schema: 'openapi/backend.spec.yaml',
+        cookies: true
       }
     },
     openAPITS: {

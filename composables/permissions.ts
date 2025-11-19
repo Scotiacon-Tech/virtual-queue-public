@@ -1,3 +1,5 @@
+import {getCapabilities} from "~/composables/api/capabilities";
+
 class PermissionsError extends Error {}
 
 export type AppPermissions = {
@@ -28,7 +30,7 @@ export const useAppPermissions = (init: AppPermissions) => useState<AppPermissio
 
 export const fetchPermissions = async (): Promise<AppPermissions> => {
     try {
-        const {status, user} = await $queuesBackend('/capabilities', {key: 'app-permissions'})
+        const {status, user} = await getCapabilities();
         const directPermissions = {
             canDoSomething: status.api == "online",
             canCreateEvent: user.allowedActions.includes("event:create"),
