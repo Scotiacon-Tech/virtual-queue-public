@@ -44,13 +44,13 @@ export default defineNuxtConfig({
   },
 
   oidc: {
-    defaultProvider: 'keycloak',
+    enabled: true,
     providers: {
       keycloak: {
         audience: 'account',
-        baseUrl: '', // env var NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL=http://localhost:8080/realms/nuxt-oidc-test
-        clientId: '', // env var NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID=CLIENT_ID
-        clientSecret: '', // env var NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET=CLIENT_SECRET
+        baseUrl: 'http://localhost:8080/realms/scotiacon/',
+        clientId: 'queues-frontend',
+        clientSecret: 'LGtuOw7QEvmVEg6wQkmuwGtHC7vVAvQG', // dev only
         redirectUri: 'http://localhost:3000/auth/keycloak/callback',
         exposeAccessToken: true,
       },
@@ -63,7 +63,7 @@ export default defineNuxtConfig({
     },
     endpoints: {
       queuesBackend: {
-        url: process.env.API_BASE_URL ?? 'http://localhost:8000',
+        url:  'http://localhost:8000',
         schema: 'openapi/backend.spec.yaml',
         cookies: true
       }
