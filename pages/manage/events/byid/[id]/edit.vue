@@ -48,12 +48,14 @@ async function submit(ev: Readonly<{
       </v-row>
     </v-container>
     <v-container v-else>
+      <v-sheet class="pa-5" rounded elevation="8">
       <EventForm
           submit-text="Save"
           :submit-disabled="submitDisabled"
           v-model="data!.data"
           @submit="submit"
       />
+      </v-sheet>
     </v-container>
   </v-main>
 </template>
