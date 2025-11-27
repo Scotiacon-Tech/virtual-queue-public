@@ -4,6 +4,8 @@ import {hasAppPermissions} from "~/composables/permissions";
 const model = defineModel<boolean>()
 const canManageEvents = hasAppPermissions(['canManageEvents'])
 const canManageTickets = hasAppPermissions(['canManageTickets'])
+
+const {user} = useOidcAuth()
 </script>
 
 <template>
@@ -11,12 +13,9 @@ const canManageTickets = hasAppPermissions(['canManageTickets'])
       v-model="model"
       temporary
   >
-    <v-list>
-      <v-list-item
-          prepend-avatar="https://cdn.vuetifyjs.com/images/john.png"
-      >
-        <v-list-item-title>John Leider</v-list-item-title>
-        <v-list-item-subtitle>john@google.com</v-list-item-subtitle>
+    <v-list v-if="user">
+      <v-list-item>
+        <v-list-item-title v-if="user.userInfo">Hello, {{ user.userInfo.name }}</v-list-item-title>
       </v-list-item>
     </v-list>
 
@@ -103,6 +102,7 @@ const canManageTickets = hasAppPermissions(['canManageTickets'])
 
       <v-list-item
           color="primary"
+          to="/auth/logout"
       >
         <template v-slot:prepend>
           <v-icon icon="mdi-logout"/>
