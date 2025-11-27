@@ -29,8 +29,11 @@ const canListTickets = hasAppPermissions(['canListTickets'])
           </v-col>
         </v-row>
 
-        <ActiveTickets v-if="canListTickets"/>
-        <v-divider class="my-6"></v-divider>
+        <ActiveTickets v-if="canListTickets">
+          <template v-slot:after>
+            <v-divider class="my-6"></v-divider>
+          </template>
+        </ActiveTickets>
         <UpcomingEvents v-if="canListEvents" />
       </v-sheet>
     </v-container>
