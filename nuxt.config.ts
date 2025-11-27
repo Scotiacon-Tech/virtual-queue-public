@@ -79,13 +79,19 @@ export default defineNuxtConfig({
     sri: true,
   },
   routeRules: {
-    '/manage/tickets/scan/event/**': {
-      ssr: false,
+    '/**': {
       security: {
         headers: {
           permissionsPolicy: {
             'camera': ['self']
           },
+        },
+      }
+    },
+    '/manage/tickets/scan/event/**': {
+      ssr: false,
+      security: {
+        headers: {
           contentSecurityPolicy: {
             'script-src': [
               "'self'",  // Fallback value, will be ignored by most modern browsers (level 3)
