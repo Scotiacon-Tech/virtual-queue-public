@@ -13,7 +13,7 @@ useHead({
 })
 
 const route = useRoute();
-let id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
+let id = (Array.isArray(route.params.id) ? route.params.id[0] : route.params.id) ?? '';
 const {data, error, refresh} = await useGetTicketById(id, {includeEvent: true})
 // TODO Not found error
 
@@ -37,10 +37,8 @@ const busyRejoin = ref<boolean>(false)
 
 async function rejoin(id: string) {
   try {
-    console.log("Rejoining queue", {id})
     busyRejoin.value = true;
     await fetchUpdateTicket(id, {state: "Requested"})
-    console.log("Refreshing tickets");
     await refresh()
   } catch (error) {
     console.error("Error rejoining", error)
@@ -53,26 +51,32 @@ async function rejoin(id: string) {
 <template>
   <v-main>
     <v-container>
-      <div class="d-flex justify-center">
-        <TicketView v-if="data" :ticket="data" qr-code />
-      </div>
       <v-sheet
           aria-label="Actions"
           v-if="data && ['Requested', 'OnHold'].includes(data.state)"
-          class="mt-4 pa-5"
+          class="mt-4 pa-5 d-flex flex-column flex-md-row ga-md-8"
           rounded
           elevation="8"
       >
-        <v-btn v-if="data.state == 'Requested'" block variant="outlined" :loading="busyHolding" @click="() => hold(id)">
-          Hold My Place
-        </v-btn>
-        <v-btn v-if="data.state == 'OnHold'" block variant="outlined" :loading="busyRejoin" @click="() => rejoin(id)">
-          Rejoin queue
-        </v-btn>
+        <div class="d-flex justify-center mb-6">
+          <TicketView v-if="data" :ticket="data" qr-code />
+        </div>
+        <div>
+          <h2 class="text-h6 mb-2">Actions</h2>
+          <v-btn v-if="data.state == 'Requested'" variant="outlined" :loading="busyHolding" @click="() => hold(id)">
+            Hold My Place
+          </v-btn>
+          <v-btn v-if="data.state == 'OnHold'" variant="outlined" :loading="busyRejoin" @click="() => rejoin(id)">
+            Rejoin queue
+          </v-btn>
+        </div>
       </v-sheet>
     </v-container>
   </v-main>
 </template>
 
 <style scoped>
+.actions {
+  display: flex;
+}
 </style>

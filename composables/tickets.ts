@@ -1,26 +1,9 @@
 import {fetchCreateTicket, fetchUpdateTicket} from "~/composables/api/events";
 
-export const useTicketOps = (eventId: string)  => {
-    const busyGettingATicket = ref<boolean>(false);
+export const useTicketOps = ()  => {
     const busyHolding = ref<boolean>(false)
     const busyRejoin = ref<boolean>(false)
-
-    async function newTicket() {
-        if (eventId) {
-            console.log("Getting a new ticket", {eventId});
-            try {
-                busyGettingATicket.value = true
-                await fetchCreateTicket(eventId)
-                return true;
-            } catch (error) {
-                console.error("An error occurred trying to create a new ticket", error);
-                return false;
-            } finally {
-                busyGettingATicket.value = false
-            }
-        }
-    }
-
+    const busyCheckingIn = ref<boolean>(false)
 
     async function holdTicket(id: string) {
         try {
@@ -36,7 +19,6 @@ export const useTicketOps = (eventId: string)  => {
         }
     }
 
-
     async function rejoinTicket(id: string) {
         try {
             console.log("Rejoining queue", {id})
@@ -51,12 +33,28 @@ export const useTicketOps = (eventId: string)  => {
         }
     }
 
+    async function checkInTicket(id: string) {
+        try {
+            console.log("Checking in", {id})
+            busyCheckingIn.value = true;
+            await fetchUpdateTicket(id, {state: "CheckedIn"})
+            return true;
+        } catch (error) {
+            console.error("Error checking in", error)
+            return false;
+        } finally {
+            busyCheckingIn.value = false;
+        }
+    }
+
+
+
     return {
-        newTicket,
-        newTicketBusy: busyGettingATicket,
         holdTicket,
         holdTicketBusy: busyHolding,
         rejoinTicket,
         rejoinTicketBusy: busyRejoin,
+        checkInTicket,
+        checkInTicketBusy: busyCheckingIn,
     }
 }

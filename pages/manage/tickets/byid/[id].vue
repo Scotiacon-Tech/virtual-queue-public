@@ -23,6 +23,49 @@ async function copyIdToClipboard() {
   copyIdText.value = "Copied!"
 }
 
+
+const busyActivating = ref<boolean>(false)
+
+async function activate(id: string) {
+  try {
+    busyActivating.value = true;
+    await fetchUpdateTicket(id, {state: 'Active'})
+    await refresh()
+  } catch (error) {
+    console.error("Error Activating", error)
+  } finally {
+    busyActivating.value = false;
+  }
+}
+
+const busyCheckingIn = ref<boolean>(false)
+
+async function checkIn(id: string) {
+  try {
+    busyCheckingIn.value = true;
+    await fetchUpdateTicket(id, {state: 'CheckedIn'})
+    await refresh()
+  } catch (error) {
+    console.error("Error Activating", error)
+  } finally {
+    busyCheckingIn.value = false;
+  }
+}
+
+const busyConsuming = ref<boolean>(false)
+
+async function consume(id: string) {
+  try {
+    busyConsuming.value = true;
+    await fetchUpdateTicket(id, {state: 'Consumed'})
+    await refresh()
+  } catch (error) {
+    console.error("Error Activating", error)
+  } finally {
+    busyConsuming.value = false;
+  }
+}
+
 const revokeDialog = ref(false)
 async function revokeDialogConfirm() {
   try {
@@ -99,6 +142,33 @@ function revokeDialogCancel() {
           <TicketView qr-code :ticket="data" />
         </div>
 
+        <v-btn
+            class="my-4"
+            block
+            :loading="busyActivating"
+            :disabled="data.state !== 'Requested'"
+            @click="() => activate(id)"
+        >
+          Activate
+        </v-btn>
+        <v-btn
+            class="my-4"
+            block
+            :loading="busyCheckingIn"
+            :disabled="data.state !== 'Active'"
+            @click="() => checkIn(id)"
+        >
+          Check In
+        </v-btn>
+        <v-btn
+            class="my-4"
+            block
+            :loading="busyConsuming"
+            :disabled="data.state !== 'Consumed'"
+            @click="() => consume(id)"
+        >
+          Consume
+        </v-btn>
         <v-btn
           class="my-4"
           block

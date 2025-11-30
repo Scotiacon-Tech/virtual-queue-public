@@ -10,24 +10,30 @@ useHead({
 })
 
 let page = usePagination()
-const {data, error} = useMyTickets(page.value)
+const subject = useSubject()
+const {data: tickets, refresh: refreshTickets, error} = useMyTickets(subject.value, page.value)
+
+async function refresh() {
+  await refreshTickets({cause: "refresh:manual"})
+}
+
 </script>
 
 <template>
   <v-main>
     <v-container>
       <v-row dense>
-        <v-col v-if="data && data.data.length > 0" role="list" cols="12" v-for="ticket in data.data">
-          <TicketSummaryCard role="listitem" :id="ticket.id" :title="ticket.event.name" description="" />
+        <v-col v-if="tickets && tickets.data.length > 0" role="list" cols="12" v-for="ticket in tickets.data">
+          <TicketCard role="listitem" :ticket="ticket" @refresh="refresh"/>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12">
           <v-pagination
               v-model="page"
-              :length="data?.totalPages || 0"
+              :length="tickets?.totalPages ?? 0"
               class="my-2"
-          ></v-pagination>
+          />
         </v-col>
       </v-row>
     </v-container>

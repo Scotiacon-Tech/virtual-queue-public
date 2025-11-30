@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import {useEventDataUpcoming} from "~/composables/api/events";
+import dayjs from "dayjs";
 
-const {data, error} = await useEventDataUpcoming(3)
-const events = computed(() => {
-  if (data.value) {
-    return data.value.data;
-  } else {
-    return [];
-  }
-})
+const now = dayjs();
+const start = now.startOf('day').add(3, 'day')
+const {data, error, pending} = useEventDataUpcoming(start, now)
 </script>
 
 <template>
   <h2 class="mt-4 mb-3">Upcoming events (next 3 days)</h2>
-  <div v-if="events.length > 0" role="list" class="d-flex flex-column ga-4 mb-4">
+  <div v-if="!data && pending" role="presentation" class="d-flex flex-column ga-4 mb-4" >
+    <EventSummaryCardSkeleton/>
+    <EventSummaryCardSkeleton/>
+    <EventSummaryCardSkeleton/>
+  </div>
+  <div v-else-if="data && data.data.length > 0" role="list" class="d-flex flex-column ga-4 mb-4">
     <EventSummaryCard
-        v-for="event in events"
+        v-for="event in data.data"
         role="listitem"
         :id="event.id"
         :title="event.name"
@@ -25,14 +26,15 @@ const events = computed(() => {
     />
   </div>
   <v-alert
-      v-else-if="error"
+      v-else-if="error !== undefined"
       type="error"
   >
     <v-alert-title>Oh no!</v-alert-title>
-    <p>We were unable to load the latest events. Reason: {{ error.statusMessage }}</p>
+    <p>We were unable to load the latest events. Reason: {{ error }}</p>
   </v-alert>
   <p v-else class="mb-4">Ain't nobody here but us chickens. 🐔</p>
-  <v-btn to="/events">See all events</v-btn>
+
+  <v-btn block to="/events">See all events</v-btn>
 </template>
 
 <style scoped>

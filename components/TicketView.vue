@@ -46,18 +46,18 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="ticket my-3">
+  <section class="ticket">
     <p role="presentation" class="ticket-top-banner">{{ now.format('YYYYMMDDTHHmmss') }}</p>
     <p role="presentation" class="ticket-bottom-banner">Scotiacon</p>
     <v-row class="mx-2 mt-0 mb-0 justify-center">
       <v-col class="ticket-details">
         <p class="text-left mb-4">
-          <small>Event:</small><br/>
-          <span class="font-weight-bold">{{ ticket.event?.name ?? '&lt;Unknown&gt;' }}</span>
+          Event:<br/>
+          <span class="text-h4">{{ ticket.event?.name ?? '&lt;Unknown&gt;' }}</span>
         </p>
         <p class="text-left mb-4">
-          <small>Ticket number:</small><br/>
-          <span class="text-h3 ">{{ ticket.name }}</span>
+          Ticket number:<br/>
+          <span class="text-h4">{{ ticket.name }}</span>
         </p>
         <p>
           <v-chip
@@ -131,7 +131,7 @@ onBeforeUnmount(() => {
 
   background: khaki;
 
-  box-shadow: 5px 5px 15px 5px rgba(0,0,0,0.5);
+  box-shadow: 2px 0px 12px 1px rgba(0,0,0,0.4);
 }
 
 .ticket-top-banner {
@@ -142,6 +142,8 @@ onBeforeUnmount(() => {
   width: 100%;
   overflow: hidden;
   padding: 8px 16px;
+
+  user-select: none;
 
   background: linear-gradient(
       90deg,
@@ -176,6 +178,7 @@ onBeforeUnmount(() => {
   color: white;
   overflow: hidden;
   padding: 8px 16px;
+  user-select: none;
 }
 
 .ticket-details {

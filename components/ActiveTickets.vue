@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import {useMyActiveTickets} from "~/composables/api/events";
 
-const {data, error} = useMyActiveTickets({pageSize: 0})
+const subject = useSubject()
+const {data, error} = useMyActiveTickets(subject.value, {pageSize: 0})
 const numTickets = computed(() => {
   if (data.value) {
     return data.value.totalItems;
