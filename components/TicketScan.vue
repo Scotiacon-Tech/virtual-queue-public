@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import type { DetectedBarcode } from 'nuxt-qrcode'
-import {
-  fetchGetTicket,
-  fetchUpdateTicket,
-  type TicketItem
-} from "~/composables/api/events";
+import type {DetectedBarcode} from 'nuxt-qrcode'
+import {fetchGetTicket, fetchUpdateTicket, type TicketItem} from "~/composables/api/events";
 
 const props = defineProps<{
   eventId: string,
@@ -28,6 +24,12 @@ onMounted(async () => {
   }
 })
 
+const modes = [
+  {value: 'normal', label: 'Normal'},
+  {value: 'auto-checkin', label: 'Automatic Check In'},
+  {value: 'auto-consume', label: 'Automatic Mark as Used'},
+]
+const mode = ref(modes[0])
 
 const scannedText = ref("")
 const scannedTicket = ref<TicketItem | undefined>()
@@ -36,18 +38,11 @@ const state = reactive({
   error: false,
 })
 
-const autoCheckIn = ref(false)
-const autoConsume = ref(false)
-
-function setScannedTicket(data: TicketItem) {
-  scannedTicket.value = data
-}
-
-
+const settingsDialog = ref(false)
 async function getTicket(id: string) {
   try {
     const data = await fetchGetTicket(id, {includeEvent: true});
-    setScannedTicket(data)
+    scannedTicket.value = data
     return data;
   } catch (error) {
     console.log(error)
@@ -61,7 +56,7 @@ async function checkInTicket(id: string) {
     checkInBusy.value = true
     console.log(`Checking ticket ${id}`)
     const data = await fetchUpdateTicket(id, {state: 'CheckedIn'})
-    setScannedTicket(data)
+    scannedTicket.value = data
   } catch (error) {
     console.log(error)
   } finally {
@@ -75,7 +70,7 @@ async function consumeTicket(id: string) {
     consumeBusy.value = true
     console.log(`Consuming ticket ${id}`)
     const data = await fetchUpdateTicket(id, {state: 'Consumed'})
-    setScannedTicket(data)
+    scannedTicket.value = data
   } catch (error) {
     console.log(error)
   } finally {
@@ -93,14 +88,12 @@ function onDetect(detectedCodes: DetectedBarcode[]) {
     scannedText.value = text
     if (text.startsWith("ticket:")) {
       const id = text.substring(7, text.length)
+      scannedTicket.value = undefined
       getTicket(id).then(data => {
-        debugger
         if (data && data.eventId == props.eventId) {
-          if (data.state == 'Active' && autoCheckIn.value) {
-            checkInTicket(data.id)
-          }
-          if (data.state == 'CheckedIn' && autoConsume.value) {
-            consumeTicket(data.id)
+          switch (mode.value?.value) {
+            case 'auto-checkin': checkInTicket(data.id); break;
+            case 'auto-consume': consumeTicket(data.id); break;
           }
         }
       }).catch(console.error)
@@ -135,17 +128,52 @@ function onError(err: Error) {
     </div>
 
     <v-container>
-      <v-card class="my-0 mx-2 justify-center">
-        <v-col>
-          <p><strong>Event:</strong> {{props.eventName}} </p>
-          <v-row>
-            <v-checkbox v-model="autoCheckIn" label="Auto check-in"></v-checkbox>
-            <v-checkbox v-model="autoConsume" label="Auto use"></v-checkbox>
-          </v-row>
-          <p v-if="scannedTicket"><strong>Ticket ID:</strong> <code>{{ scannedTicket.id }}</code> </p>
-          <p v-if="scannedTicket"><strong>State:</strong> {{ scannedTicket.state }} </p>
+      <v-card class="my-0 mx-2 justify-center" :title="props.eventName" >
+        <template v-slot:append>
+          <v-btn icon="mdi-cog-outline" variant="text" @click="settingsDialog = true"/>
+        </template>
+        <v-dialog
+            v-model="settingsDialog"
+            width="auto"
+        >
+          <v-card
+              min-width="300"
+              max-width="500"
+              title="Settings"
+          >
+            <v-col>
+            <v-select
+                v-model="mode"
+                :items="modes"
+                item-title="label"
+                item-value="value"
+                label="Mode"
+                return-object
+                hide-details
+                density="comfortable"
+            ></v-select>
+            </v-col>
+            <template v-slot:actions>
+              <v-btn
+                  class="ms-auto"
+                  text="Ok"
+                  @click="settingsDialog = false"
+              ></v-btn>
+            </template>
+          </v-card>
+        </v-dialog>
+
+        <v-col class="pt-0 mt-0">
+          <p v-if="scannedTicket" class="ticket-id"><strong>Ticket ID:</strong> <code>{{ scannedTicket.id }}</code> </p>
+          <p v-if="scannedTicket" class="ticket-state"><strong>State:</strong> {{ scannedTicket.state }} </p>
           <v-btn v-if="scannedTicket" block class="mt-3" :disabled="checkInBusy || !scannedTicket || scannedTicket.eventId != eventId || scannedTicket.state != 'Active'">Mark ticket as checked in</v-btn>
           <v-btn v-if="scannedTicket" block class="mt-3" :disabled="consumeBusy || !scannedTicket || scannedTicket.eventId != eventId || scannedTicket.state != 'CheckedIn'">Mark ticket as used</v-btn>
+          <p v-if="scannedText && !scannedTicket">
+            Loading <br/><code>{{scannedText}}</code>
+          </p>
+          <p v-else-if="!scannedText">
+            Scan a ticket 🎟️
+          </p>
         </v-col>
       </v-card>
     </v-container>
@@ -160,5 +188,11 @@ function onError(err: Error) {
 <style scoped>
 .camera {
   max-height: 50dvh
+}
+.ticket-id {
+  font-size: 8pt;
+}
+.ticket-state {
+  font-size: 8pt;
 }
 </style>

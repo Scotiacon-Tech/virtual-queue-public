@@ -85,13 +85,6 @@ export default defineNuxtConfig({
           permissionsPolicy: {
             'camera': ['self']
           },
-        },
-      }
-    },
-    '/manage/tickets/scan/event/**': {
-      ssr: false,
-      security: {
-        headers: {
           contentSecurityPolicy: {
             'script-src': [
               "'self'",  // Fallback value, will be ignored by most modern browsers (level 3)
@@ -104,6 +97,13 @@ export default defineNuxtConfig({
               "https://fastly.jsdelivr.net/npm/zxing-wasm@1.1.3/dist/reader/zxing_reader.wasm"
             ]
           }
+        },
+      }
+    },
+    '/manage/tickets/scan/event/**': {
+      ssr: false,
+      security: {
+        headers: {
         }
       }
     }
