@@ -61,6 +61,16 @@ const {user} = useOidcAuth()
         <v-list-item-title>My Tickets</v-list-item-title>
       </v-list-item>
 
+      <v-list-item
+          color="primary"
+          to="/my/settings"
+      >
+        <template v-slot:prepend>
+          <v-icon icon="mdi-cog"></v-icon>
+        </template>
+        <v-list-item-title>My Settings</v-list-item-title>
+      </v-list-item>
+
       <v-divider v-if="canManageEvents || canManageTickets"></v-divider>
 
       <v-list-subheader v-if="canManageEvents || canManageTickets">Manage</v-list-subheader>

@@ -22,6 +22,7 @@ type GetTicketsOptions = {
     owner?: string
     state?: TicketState[]
     ticketNumber?: string
+    badgeIdLike?: string
 }
 type GetTicketByIDOptions = {
     includeEvent?: true
@@ -325,6 +326,7 @@ export const fetchTicketDataPage = (pageOffset: number, pageSize: number, opts?:
             "filter[owner]": opts?.owner,
             "filter[state]": opts?.state,
             "filter[name]": opts?.ticketNumber,
-            "filter[event_id]": opts?.eventId
+            "filter[event_id]": opts?.eventId,
+            "filter[badge_id_like]": opts?.badgeIdLike,
         }
     }).then(transformTicketPage);

@@ -7,24 +7,26 @@ services:
     container_name: frontend
     restart: always
     ports:
-      - "8888:80"
+      - "3000:80"
     networks:
       - default
       - backend
     environment:
       # Allow the environment to override the config
       NITRO_ENV_EXPANSION: true
+      # Path to the API relative to the backend
       NUXT_API_PARTY_ENDPOINTS_QUEUES_BACKEND_URL: "http://api:8000"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "http://keycloak:8080/realms/scotiacon"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID: "queues-frontend"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET: "LGtuOw7QEvmVEg6wQkmuwGtHC7vVAvQG"
-      # This is a frontend redirect so needs to be localhost
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "http://localhost:8888/auth/keycloak/callback"
-      # These are backend calls so need to call the Docker hostnames
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL: "http://keycloak:8080/realms/scotiacon/protocol/openid-connect/auth"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL: "http://keycloak:8080/realms/scotiacon/protocol/openid-connect/token"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL: "http://keycloak:8080/realms/scotiacon/protocol/openid-connect/userinfo"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL: "http://keycloak:8080/realms/scotiacon/protocol/openid-connect/logout"
+      # Base path of the auth server relative to the frontend and backend
+      NUXT_OIDC_PROVIDERS_OIDC_BASE_URL: "https://auth-api.scotiacon.org.uk/"
+      NUXT_OIDC_PROVIDERS_OIDC_CLIENT_ID: "virtual-queue"
+      NUXT_OIDC_PROVIDERS_OIDC_CLIENT_SECRET: "CHANGE ME"
+      # Path on the frontend that will accept the auth callback
+      # NUXT_OIDC_PROVIDERS_OIDC_REDIRECT_URI: "http://localhost:3000/auth/oidc/callback"
+      # These are backend calls so need to call the Docker hostnames, relative to baseUrl.
+      # NUXT_OIDC_PROVIDERS_OIDC_AUTHORIZATION_URL:
+      # NUXT_OIDC_PROVIDERS_OIDC_TOKEN_URL:
+      # NUXT_OIDC_PROVIDERS_OIDC_USER_INFO_URL:
+      # NUXT_OIDC_PROVIDERS_OIDC_LOGOUT_URL:
       NUXT_OIDC_SESSION_SECRET: "_LZTTA4Z1POI_7q5sp-3vlHokSalt1JzFlfchulw83TgD3jG"
       NUXT_OIDC_TOKEN_KEY: "data:;base64,vUe412KPj3f48V4KHmPxO6chioGcW+kNkr108eQbqT4="
       NUXT_OIDC_AUTH_SESSION_SECRET: "SN5yrEOgUE3ikO4eF0qzGN06UtFPX-uYNH8QXGfcFfNd6pph"

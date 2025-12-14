@@ -56,10 +56,10 @@ const headers = ref<DataTableHeader<TicketPageItem>[]>([
     maxWidth: "500"
   },
   {
-    title: 'Owner',
+    title: 'Badge ID',
     align: 'start',
     sortable: false,
-    key: 'owner',
+    key: 'badgeId',
     maxWidth: "500"
   },
   {
@@ -88,25 +88,25 @@ const items = ref<TicketPageItem[]>([])
 const totalItems = ref<number>(0)
 const filterEvent = shallowRef<Event | undefined>(eventFromUrl);
 const filterTicketNumber = shallowRef<string | undefined>(undefined);
-const filterOwner = shallowRef<string | undefined>(undefined);
+const filterBadgeId = shallowRef<string | undefined>(undefined);
 const filterState = shallowRef<TicketState[] | undefined>(['Active', 'Requested']);
 
-const filter = shallowRef<Partial<{ eventId: string, ticketNumber: string, owner: string, state: TicketState[] }> | undefined>(undefined);
+const filter = shallowRef<Partial<{ eventId: string, ticketNumber: string, badgeid: string, state: TicketState[] }> | undefined>(undefined);
 const filtersEnabled = ref<number>(0)
 const filterThrottle = throttledRef(filter, 1000);
 const filterLastChanged = ref<string>()
-watch([filterEvent, filterTicketNumber, filterOwner, filterState], () => {
-  console.log({filterEvent, filterTicketNumber, filterOwner, filterState});
+watch([filterEvent, filterTicketNumber, filterBadgeId, filterState], () => {
+  console.log({filterEvent, filterTicketNumber, filterBadgeId, filterState});
   filter.value = {
     eventId: filterEvent.value?.id,
     ticketNumber: filterTicketNumber.value,
-    owner: filterOwner.value,
+    badgeid: filterBadgeId.value,
     state: filterState.value,
   }
   filtersEnabled.value =
       (filterEvent.value ? 1 : 0) +
       (filterTicketNumber.value && filterTicketNumber.value !== "" ? 1 : 0) +
-      (filterOwner.value && filterOwner.value !== "" ? 1 : 0) +
+      (filterBadgeId.value && filterBadgeId.value !== "" ? 1 : 0) +
       (filterState.value && filterState.value.length > 0 ? 1 : 0)
 }, {immediate: true})
 watch([filterThrottle], () => {
@@ -116,7 +116,7 @@ watch([filterThrottle], () => {
 function clearFilters() {
   filterEvent.value = undefined
   filterTicketNumber.value = undefined
-  filterOwner.value = undefined
+  filterBadgeId.value = undefined
   filterState.value = undefined
 }
 
@@ -130,13 +130,13 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
   console.log({page, itemsPerPage, sortBy, groupBy, search});
   loading.value = true;
   try {
-    const {eventId, ticketNumber, owner, state} = filterThrottle.value ?? {}
+    const {eventId, ticketNumber, badgeid, state} = filterThrottle.value ?? {}
     const data = await fetchTicketDataPage(
         page,
         itemsPerPage,
         {
           eventId: eventId,
-          owner: owner && owner !== "" ? owner : undefined,
+          badgeIdLike: badgeid && badgeid !== "" ? badgeid : undefined,
           state: state,
           ticketNumber: ticketNumber && ticketNumber !== "" ? ticketNumber : undefined,
         }
@@ -197,8 +197,8 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
                   ></v-text-field>
 
                   <v-text-field
-                      label="Owner"
-                      v-model="filterOwner"
+                      label="Badge ID"
+                      v-model="filterBadgeId"
                       hide-details
                   ></v-text-field>
 
@@ -227,8 +227,8 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
             {{ item.name }}
           </template>
 
-          <template v-slot:item.owner="{ item }">
-            {{ item.owner }}
+          <template v-slot:item.badgeId="{ item }">
+            {{ item.badgeId }}
           </template>
 
           <template v-slot:item.status="{ item }">

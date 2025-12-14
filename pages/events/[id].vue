@@ -15,6 +15,7 @@ definePageMeta({
 useHead({
   title: `Events`
 })
+requireAppPermissions(['canViewEvent'])
 
 const dayjs = useDayjs();
 const subject = useSubject();
@@ -39,6 +40,7 @@ async function newTicket() {
     try {
       busyGettingATicket.value = true
       await fetchCreateTicket(id)
+      await ticketsRefresh()
       return true;
     } catch (error) {
       console.error("An error occurred trying to create a new ticket", error);

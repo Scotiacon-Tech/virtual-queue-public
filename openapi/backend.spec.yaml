@@ -2,18 +2,17 @@ openapi: 3.0.3
 info:
   title: Scotiacon Virtual Queue API
   description: |-
-    Welcome to the Scotiacon Virtual Queue API.
+    The API for the Scotiacon Queues Application.
     
-    ## Events
-    
-    ## Tickets
-  contact:
-    email: changeme@example.com
+    A digital queueing system to help alleviate the issue of thousands of people physically queueing 
+
   version: 1.0.0
 tags:
   - name: Operations
   - name: Events
   - name: Tickets
+security:
+  - BearerJWT: []
 paths:
   /ping:
     get:
@@ -134,6 +133,10 @@ paths:
           $ref: '#/components/responses/PaginatedEventsResponse'
         '400':
           $ref: '#/components/responses/BadRequestProblem'
+        '403':
+          $ref: '#/components/responses/ForbiddenProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
     put:
       summary: Create an event
       description: ""
@@ -145,6 +148,8 @@ paths:
       responses:
         '201':
           $ref: '#/components/responses/EventResponse'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
   /event/{id}:
     get:
       summary: Get an event by ID
@@ -165,6 +170,8 @@ paths:
           $ref: '#/components/responses/EventWithRelationsResponse'
         '404':
           $ref: '#/components/responses/NotFoundProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
     patch:
       summary: Update an event by ID
       description: ""
@@ -184,8 +191,12 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/EventResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenProblem'
         '404':
           $ref: '#/components/responses/NotFoundProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
   /event/{id}/activate-tickets:
     post:
       summary: Mark the first N people in the event as active
@@ -217,8 +228,12 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/ActivateTicketsResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenProblem'
         '404':
           $ref: '#/components/responses/NotFoundProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
   /event/{id}/latest-activated-tickets:
     get:
       summary: Get the most recently activated tickets
@@ -245,8 +260,12 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/TicketsResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenProblem'
         '404':
           $ref: '#/components/responses/NotFoundProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
   /event/{id}/ticket-stats:
     get:
       summary: Get ticket stats for the event
@@ -265,8 +284,82 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/EventTicketStatisticsResponse'
+        '304':
+          description: Not modified
+        '403':
+          $ref: '#/components/responses/ForbiddenProblem'
         '404':
           $ref: '#/components/responses/NotFoundProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
+  /event/{id}/billboard.png:
+    get:
+      summary: Get a billboard for this event showing the currently valid ticket
+      description: ""
+      operationId: get-event-billboard-png
+      tags:
+        - Events
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the event
+        - in: query
+          name: variant
+          schema:
+            type: string
+            enum:
+              - mcdonalds
+              - "2026"
+          required: false
+          description: the variant of image to render
+      responses:
+        '200':
+          $ref: '#/components/responses/EventBillboardPNGResponse'
+        '304':
+          description: Not modified
+        '403':
+          $ref: '#/components/responses/ForbiddenProblem'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
+  /event/{id}/billboard.jpeg:
+    get:
+      summary: Get a billboard for this event showing the currently valid ticket
+      description: ""
+      operationId: get-event-billboard-jpeg
+      tags:
+        - Events
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: the ID of the event
+        - in: query
+          name: variant
+          schema:
+            type: string
+            enum:
+              - mcdonalds
+              - "2026"
+          required: false
+          description: the variant of image to render
+      responses:
+        '200':
+          $ref: '#/components/responses/EventBillboardJPEGResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenProblem'
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
   /ticket:
     get:
       summary: List tickets
@@ -310,6 +403,13 @@ paths:
             format: uuid
           x-oapi-codegen-extra-tags:
             path: filter[event_id]
+        - in: query
+          name: filter[badge_id_like]
+          description: The badge ID associated with the ticket
+          schema:
+            type: string
+          x-oapi-codegen-extra-tags:
+            path: filter[badge_id_like]
         - in: query
           name: filter[state]
           description: The state of the ticket
@@ -431,8 +531,12 @@ paths:
         '409':
           $ref: '#/components/responses/ConflictProblem'
 
-
 components:
+  securitySchemes:
+    BearerJWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   requestBodies:
     NewEventRequest:
       required: true
@@ -601,6 +705,20 @@ components:
             properties:
               data:
                 $ref: '#/components/schemas/TicketStatistics'
+    EventBillboardPNGResponse:
+      description: A PNG image
+      content:
+        image/png:
+          schema:
+            type: string
+            format: bytes
+    EventBillboardJPEGResponse:
+      description: A JPEG image
+      content:
+        image/jpeg:
+          schema:
+            type: string
+            format: bytes
     TicketResponse:
       description: A ticket
       content:
@@ -935,6 +1053,7 @@ components:
         - name
         - state
         - owner
+        - badgeId
       properties:
         id:
           type: string
@@ -948,6 +1067,9 @@ components:
           $ref: '#/components/schemas/TicketState'
         owner:
           type: string
+        badgeId:
+          type: string
+          example: 123X
         heldAtPosition:
           type: integer
           minimum: 1

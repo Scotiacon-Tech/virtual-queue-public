@@ -6,13 +6,15 @@ import ErrorView from "~/components/ErrorView.vue";
 
 useDayjs().tz.setDefault()
 useAppPermissions(await fetchPermissions())
+
 </script>
 
 <template>
+  <NuxtPwaAssets />
   <NuxtLoadingIndicator/>
   <NuxtErrorBoundary>
     <template #error="{error, clearError}">
-      <ErrorView :error="error" :clearError="clearError" />
+      <ErrorView :error="error" :clearError="clearError"/>
     </template>
     <NuxtLayout>
       <NuxtPage/>

@@ -29,6 +29,7 @@ export default defineNuxtConfig({
         config.plugins.push(vuetify({ autoImport: true }))
       })
     },
+    '@vite-pwa/nuxt'
   ],
 
   build: {
@@ -43,16 +44,72 @@ export default defineNuxtConfig({
     },
   },
 
+  pwa: {
+    strategies: 'injectManifest',
+    srcDir: 'service-worker',
+    filename: 'sw.ts',
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'Scotiacon Queues',
+      short_name: 'ScotiaQueues',
+      theme_color: '#f3900a',
+      display: 'minimal-ui',
+      start_url: '/',
+      icons: [ // TODO
+        {
+          src: '/logos/192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'any maskable',
+        },
+        {
+          src: '/logos/512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any maskable',
+        },
+      ],
+    },
+
+    workbox: {
+      globPatterns: ['**/*.{js,css,png,svg,ico}'],
+    },
+    client: {
+      installPrompt: true,
+      periodicSyncForUpdates: 3600,
+    },
+    devOptions: {
+      enabled: true,
+      suppressWarnings: true,
+      navigateFallback: '/',
+      navigateFallbackAllowlist: [/^\/$/],
+      type: 'module',
+    },
+  },
+
   oidc: {
     enabled: true,
     providers: {
-      keycloak: {
-        audience: 'account',
-        baseUrl: 'http://localhost:8080/realms/scotiacon/',
-        clientId: 'queues-frontend',
-        clientSecret: 'LGtuOw7QEvmVEg6wQkmuwGtHC7vVAvQG', // dev only
-        redirectUri: 'http://localhost:3000/auth/keycloak/callback',
+      oidc: {
+        clientId: '', // Set in NUXT_OIDC_PROVIDERS_OIDC_CLIENT_ID
+        clientSecret: '', // Set in NUXT_OIDC_PROVIDERS_OIDC_CLIENT_SECRET
+        responseType: 'code token',
+        authenticationScheme: 'body',
+        validateAccessToken: true,
+        validateIdToken: false,
+        skipAccessTokenParsing: true,
+        state: true,
+        nonce: true,
+        pkce: true,
+        tokenRequestType: 'form-urlencoded',
+        scope: ['openid', 'email', 'profile', 'convention_references'],
+        authorizationUrl: 'https://auth.scotiacon.org.uk/connect/auth',
+        tokenUrl: 'https://auth-api.scotiacon.org.uk/connect/token',
+        userInfoUrl: 'https://auth-api.scotiacon.org.uk/connect/userinfo',
+        logoutUrl: 'https://auth-api.scotiacon.org.uk/connect/logout',
+        redirectUri: 'http://localhost:3000/auth/oidc/callback',
         exposeAccessToken: true,
+        userNameClaim: 'preferred_username',
       },
     },
   },
@@ -65,7 +122,7 @@ export default defineNuxtConfig({
       queuesBackend: {
         url:  'http://localhost:8000',
         schema: 'openapi/backend.spec.yaml',
-        cookies: true
+        cookies: false
       }
     },
     openAPITS: {
@@ -83,7 +140,7 @@ export default defineNuxtConfig({
       security: {
         headers: {
           permissionsPolicy: {
-            'camera': ['self']
+            'camera': ['self'],
           },
           contentSecurityPolicy: {
             'script-src': [
