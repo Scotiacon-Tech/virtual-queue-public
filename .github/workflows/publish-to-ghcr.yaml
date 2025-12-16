@@ -31,7 +31,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/scotiacon-tech/virtual-queue-frontend:latest
-            ghcr.io/scotiacon-tech/virtual-queue-frontend:${{ github.sha }}
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ github.sha }}
