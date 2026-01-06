@@ -129,6 +129,19 @@ self.addEventListener('notificationclick', (event) => {
     )
 })
 
+self.addEventListener('push', event => {
+    const data = event.data?.json();
+    if (!data) return;
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, {
+            body: data.body,
+            //icon: '/icon.png', // optional
+            tag: 'notify-when-ticket-available'
+        })
+    );
+});
+
 setDefaultHandler(new NetworkOnly())
 cleanupOutdatedCaches()
 

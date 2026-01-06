@@ -330,3 +330,21 @@ export const fetchTicketDataPage = (pageOffset: number, pageSize: number, opts?:
             "filter[badge_id_like]": opts?.badgeIdLike,
         }
     }).then(transformTicketPage);
+
+export const subscribeToTicketUpdates = (subscription : PushSubscription) => {
+    $queuesBackend('/push-subscription', {
+        method: 'post',
+        body: {
+            subscription,
+        }
+    })
+}
+
+export const unsubscribeToTicketUpdates = (subscription : PushSubscription) => {
+    $queuesBackend('/push-subscription', {
+        method: 'delete',
+        body: {
+            subscription,
+        }
+    })
+}
