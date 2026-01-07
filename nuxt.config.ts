@@ -109,6 +109,11 @@ export default defineNuxtConfig({
         redirectUri: 'http://localhost:3000/auth/oidc/callback',
         exposeAccessToken: true,
         userNameClaim: 'preferred_username',
+        sessionConfiguration: {
+          expirationCheck: true,
+          automaticRefresh: true,
+          expirationThreshold: 240
+        }
       },
     },
   },
