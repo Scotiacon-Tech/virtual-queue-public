@@ -99,11 +99,4 @@ self.addEventListener('push', event => {
     }
 });
 
-setDefaultHandler(new NetworkOnly())
-cleanupOutdatedCaches()
-
-if (self.location.hostname !== 'localhost') {
-    staticResourceCache()
-    imageCache()
-}
 clientsClaim()
