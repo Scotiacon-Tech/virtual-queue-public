@@ -121,11 +121,19 @@ self.addEventListener(
 self.addEventListener('notificationclick', (event) => {
     event.notification.close()
 
-    // Open the URL specified in the notification data
-    const urlToOpen = event.notification.data.url || '/'
-
     event.waitUntil(
-        self.clients.openWindow(urlToOpen)
+        self.clients.matchAll({
+            type: "window"
+        }).then(function(clientList) {
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
+                if (client && client.url == '/' && 'focus' in client)
+                    return client.focus();
+            }
+            if (self.clients.openWindow) {
+                return self.clients.openWindow('/');
+            }
+        })
     )
 })
 

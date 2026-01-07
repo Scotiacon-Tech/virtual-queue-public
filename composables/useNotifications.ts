@@ -1,3 +1,25 @@
+import {
+    getVapidPublicKey,
+    subscribeToTicketUpdates,
+    unsubscribeToTicketUpdates
+} from "~/composables/api/pushNotifications";
+
+// Stolen from https://github.com/mdn/serviceworker-cookbook/blob/master/tools.js#L4
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
 export const useNotifications = () => {
     async function available() {
         if (!('serviceWorker' in navigator && "Notification" in window && window.isSecureContext)) {
@@ -35,9 +57,10 @@ export const useNotifications = () => {
         const result = await Notification.requestPermission()
         if (result === "granted") {
             try {
-                const VAPID_PUBLIC_KEY = 'BD4pgfvlvITKpdcWj1BJwr-XCyNWVIviZxmw9HfHtUmbTcChcrpxr2jOaZi-Y3lEdjl_cz2re11x0KZRLoxi9z0'
+                const pkBase64 = await getVapidPublicKey()
+                const pk = urlBase64ToUint8Array(pkBase64)
                 const subscription = await registration.pushManager.subscribe({
-                    applicationServerKey: VAPID_PUBLIC_KEY,
+                    applicationServerKey: pk,
                     userVisibleOnly: true,
                 })
                 /*
@@ -52,6 +75,7 @@ export const useNotifications = () => {
 }
                  */
                 if (subscription) {
+                    await subscribeToTicketUpdates(subscription)
                     // Send the subscription to your server
                     console.info("subscribed to push notifications");
                 } else {
@@ -76,7 +100,8 @@ export const useNotifications = () => {
                 console.warn("No subscription found to unregister");
                 return;
             }
-            subscription.unsubscribe();
+            await unsubscribeToTicketUpdates(subscription)
+            await subscription.unsubscribe();
         }
     }
 

@@ -180,6 +180,7 @@ export default defineNuxtConfig({
 
   googleFonts: {
     download: true,
+    inject: true,
     families: {
       Outfit: true
     }

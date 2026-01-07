@@ -41,7 +41,54 @@ paths:
           $ref: '#/components/responses/CapabilitiesResponse'
         '500':
           $ref: '#/components/responses/UnexpectedProblem'
-
+  /push-subscriptions:
+    post:
+      summary: Register push subscription
+      description: ""
+      operationId: post-push-subscription
+      tags:
+        - Subscriptions
+      requestBody:
+        $ref: '#/components/requestBodies/SubscriptionRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SubscriptionResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
+    delete:
+      summary: Unregister push subscription
+      description: ""
+      operationId: delete-push-subscription
+      tags:
+        - Subscriptions
+      requestBody:
+        $ref: '#/components/requestBodies/SubscriptionRequest'
+      responses:
+        '204':
+          description: OK
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
+  /.vapid/public-key:
+    get:
+      summary: Get the server's VAPID public key
+      description: ""
+      operationId: get-vapid-public-key
+      tags:
+        - Subscriptions
+      responses:
+        '200':
+          description: The public key
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: byte
+        '404':
+          $ref: '#/components/responses/NotFoundProblem'
+        '500':
+          $ref: '#/components/responses/UnexpectedProblem'
   /event:
     get:
       summary: Search for events
@@ -605,6 +652,37 @@ components:
               eventId:
                 type: string
                 format: uuid
+    SubscriptionRequest:
+      required: true
+      description: |
+        Push notification subscription.
+        See https://developer.mozilla.org/en-US/docs/Web/API/PushSubscription
+      content:
+        application/json:
+          schema:
+            required:
+              - endpoint
+              - keys
+            properties:
+              endpoint:
+                type: string
+                nullable: false
+              expirationTime:
+                description: a milliseconds time when the subscription will expire
+                type: number
+                format: double
+                nullable: true
+              keys:
+                required:
+                  - p256dh
+                  - auth
+                properties:
+                  p256dh:
+                    type: string
+                    format: byte
+                  auth:
+                    type: string
+                    format: byte
     TicketUpdateRequest:
       required: true
       description: Update a ticket
@@ -850,6 +928,12 @@ components:
             status: 404
             title: "Not found"
             detail: "The resource you are looking for does not exist."
+    SubscriptionResponse:
+      description: Subscription
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Subscription'
     UnexpectedProblem:
       description: Something went wrong
       content:
@@ -1011,6 +1095,19 @@ components:
           $ref: '#/components/schemas/ServiceStatus'
         api:
           $ref: '#/components/schemas/ServiceStatus'
+    Subscription:
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - subscribed
+            - unsubscribed
     UserStatus:
       required:
         - allowedActions
