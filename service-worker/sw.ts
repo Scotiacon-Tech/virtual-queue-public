@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 /* eslint-disable no-restricted-globals */
 
-import { precacheAndRoute } from "workbox-precaching/precacheAndRoute"
+import {precacheAndRoute} from "workbox-precaching/precacheAndRoute"
 import {clientsClaim} from "workbox-core";
 import {imageCache, staticResourceCache} from "workbox-recipes";
 import {cleanupOutdatedCaches} from "workbox-precaching";
@@ -11,112 +11,28 @@ import {NetworkOnly} from "workbox-strategies";
 declare let self: ServiceWorkerGlobalScope
 
 // @ts-ignore
-precacheAndRoute(self.__WB_MANIFEST)
+precacheAndRoute(self.__WB_MANIFEST) // Generates warning
 
-type Ticket = {
-    id: string
-}
+const ACTIVE_TICKETS_V1_NAME = 'ActiveTicketsV1';
+type ActiveTicketsV1PushEvent = {
+    count: number
+};
 
-type GetTicketsResponse = {
-    data: Ticket[]
-    total_items: number
-}
-
-async function sha256(message: string): Promise<ArrayBuffer> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(message);
-    const hash = await crypto.subtle.digest("SHA-256", data);
-    return hash;
-}
-
-function arrayBufferToBase64Direct(buffer: ArrayBuffer): string {
-    const bytes = Array.from(new Uint8Array(buffer));
-    const binary = String.fromCharCode(...bytes)
-    return btoa(binary);
-}
-
-// Function to call your remote API and check for new data
-async function checkForNewDataAndNotify() {
-    try {
-        const origin = self.location.origin;
-        let url = new URL(origin);
-        url.pathname = '/api/_proxy/queuesBackend';
-        const req = {
-            "path": "/ticket",
-            "query": {
-                "page[size]": 1,
-                "filter[owner]": "self",
-                "filter[state]": "Active",
-            },
-            "headers": [["accept", "application/json"]]
-        }
-
-        const resp = await fetch(
-            url,
-            {
-                method: "POST",
-                body: JSON.stringify(req),
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                }
-            }
-        )
-        const respJson: GetTicketsResponse = await resp.json()
-        const totalActiveTickets = respJson.total_items
-        if (totalActiveTickets > 0) {
-            // Generate a hash of the IDs so we can make a new notification when the state changes
-            const allIds = respJson.data.map((item) => item.id).sort();
-            const hash = await sha256(allIds.join('|'))
-            const base64Hash = arrayBufferToBase64Direct(hash)
-
-            // Show the notification using the Notifications API
-            let body: string | undefined;
-            if (totalActiveTickets == 1) {
-                body = `You have 1 ticket ready to use. This ticket will only be valid for 1 hour.`;
-            } else {
-                body = `You have ${totalActiveTickets} tickets ready to use. These tickets will only be valid for 1 hour.`;
-            }
-
-            const tag = `notify-when-ticket-available:${base64Hash}`
-            console.log('Generating notification', tag)
-            return self.registration.showNotification(
-                'Tickets ready to use',
-                {
-                    body,
-                    tag,
-                    icon: '/logos/192x192.png',
-                }
-            );
-
-        }
-    } catch (error) {
-        // Log the error but ensure the promise resolves/rejects
-        console.error('API call failed during periodic sync:', error);
-        // You can throw the error to potentially signal the browser to retry later
-        throw error;
+async function clearNotifications(tag: string) {
+    const notifications = await self.registration.getNotifications({tag})
+    for (let n of notifications) {
+        n.close()
     }
 }
+
 self.addEventListener('message', event => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         // Force the service worker to transition from waiting to activating
-        self.skipWaiting();
+        event.waitUntil(
+            self.skipWaiting()
+        );
     }
 });
-
-self.addEventListener(
-    'periodicsync',
-    // @ts-ignore Periodic Sync is experimental
-    function (event: ServiceWorkerGlobalScopeEventMap['periodicsync']) {
-        if (event.tag === 'notify-when-ticket-available') {
-            // event.waitUntil() ensures the Service Worker stays alive until
-            // the promise (the API call and notification) is complete.
-            event.waitUntil(
-                checkForNewDataAndNotify()
-            );
-        }
-    },
-);
 
 self.addEventListener('notificationclick', (event) => {
     event.notification.close()
@@ -124,7 +40,7 @@ self.addEventListener('notificationclick', (event) => {
     event.waitUntil(
         self.clients.matchAll({
             type: "window"
-        }).then(function(clientList) {
+        }).then(function (clientList) {
             for (var i = 0; i < clientList.length; i++) {
                 var client = clientList[i];
                 if (client && client.url == '/' && 'focus' in client)
@@ -137,22 +53,57 @@ self.addEventListener('notificationclick', (event) => {
     )
 })
 
-self.addEventListener('push', event => {
-    const data = event.data?.json();
-    if (!data) return;
+const notifyWhenTicketActiveTag = 'notify-when-ticket-active';
 
-    event.waitUntil(
-        self.registration.showNotification(data.title, {
-            body: data.body,
-            //icon: '/icon.png', // optional
-            tag: 'notify-when-ticket-available'
-        })
-    );
+self.addEventListener('push', event => {
+    try {
+        const data = event.data?.json();
+        if (!data) return;
+
+        if (data.name == ACTIVE_TICKETS_V1_NAME) {
+            console.log('Processing active tickets push notification')
+            const pushEvent = data.data as ActiveTicketsV1PushEvent;
+
+            if (pushEvent.count == 1) {
+                event.waitUntil(
+                    self.registration.showNotification(
+                        `You have 1 ticket ready to use`,
+                        {
+                            body: 'This ticket will only be valid for 1 hour.',
+                            tag: notifyWhenTicketActiveTag,
+                            // @ts-ignore: experimental, not available on firefox and safari
+                            renotify: true,
+                        }
+                    )
+                );
+            } else if (pushEvent.count > 1) {
+                event.waitUntil(
+                    self.registration.showNotification(
+                        `You have ${pushEvent.count} tickets ready to use`,
+                        {
+                            body: 'Tickets will only be valid for 1 hour.',
+                            tag: notifyWhenTicketActiveTag,
+                            // @ts-ignore: experimental, not available on firefox and safari
+                            renotify: true
+                        }
+                    )
+                );
+            } else {
+                event.waitUntil(
+                    clearNotifications(notifyWhenTicketActiveTag)
+                )
+            }
+        }
+    } catch (e) {
+        console.error('Error occurred trying to process push message', e)
+    }
 });
 
 setDefaultHandler(new NetworkOnly())
 cleanupOutdatedCaches()
 
-staticResourceCache()
-imageCache()
+if (self.location.hostname !== 'localhost') {
+    staticResourceCache()
+    imageCache()
+}
 clientsClaim()

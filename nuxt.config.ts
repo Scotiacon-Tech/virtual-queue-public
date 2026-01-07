@@ -17,7 +17,6 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     'nuxt-security',
     'nuxt-svgo',
-    '@nuxtjs/google-fonts',
     'nuxt-api-party',
     'dayjs-nuxt',
     '@vueuse/nuxt',
@@ -54,7 +53,7 @@ export default defineNuxtConfig({
       short_name: 'ScotiaQueues',
       theme_color: '#f3900a',
       display: 'minimal-ui',
-      start_url: '/',
+      start_url: '',
       icons: [ // TODO
         {
           src: '/logos/192x192.png',
@@ -176,14 +175,6 @@ export default defineNuxtConfig({
       blackColor: 'currentColor',
       whiteColor: 'transparent',
     },
-  },
-
-  googleFonts: {
-    download: true,
-    inject: true,
-    families: {
-      Outfit: true
-    }
   },
 
   dayjs: {
