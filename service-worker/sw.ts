@@ -1,17 +1,9 @@
 /// <reference lib="webworker" />
 /* eslint-disable no-restricted-globals */
 
-import {precacheAndRoute} from "workbox-precaching/precacheAndRoute"
 import {clientsClaim} from "workbox-core";
-import {imageCache, staticResourceCache} from "workbox-recipes";
-import {cleanupOutdatedCaches} from "workbox-precaching";
-import {setDefaultHandler} from "workbox-routing";
-import {NetworkOnly} from "workbox-strategies";
 
 declare let self: ServiceWorkerGlobalScope
-
-// @ts-ignore
-precacheAndRoute(self.__WB_MANIFEST) // Generates warning
 
 const ACTIVE_TICKETS_V1_NAME = 'ActiveTicketsV1';
 type ActiveTicketsV1PushEvent = {
