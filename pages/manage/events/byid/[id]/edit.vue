@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ApiAlert from "~/components/ApiAlert.vue";
-import {fetchCreateEvent, fetchUpdateEvent, useGetEventById} from "~/composables/api/events";
+import {fetchUpdateEvent, useGetEventById} from "~/composables/api/events";
 
 definePageMeta({
   title: `Manage event`
@@ -12,7 +12,7 @@ requireAppPermissions(['canUpdateEvent'])
 
 const router = useRouter();
 const route = useRoute();
-let id = route.params.id as string
+const id = route.params.id as string
 
 const {data, error, clear} = await useGetEventById(id);
 
@@ -32,6 +32,7 @@ async function submit(ev: Readonly<{
     await router.push(`/manage/events/byid/${id}`);
   } catch (error) {
     // TODO
+    console.warn(error)
   } finally {
     submitDisabled.value = false
   }
@@ -42,17 +43,17 @@ async function submit(ev: Readonly<{
   <v-main>
     <v-container v-if="error">
       <v-row>
-        <v-col v-if="error">
-          <ApiAlert :problem="error.data" :show-read-more="true"/>
+        <v-col>
+          <ApiAlert :problem="error.data as any" :show-read-more="true"/>
         </v-col>
       </v-row>
     </v-container>
-    <v-container v-else>
+    <v-container v-else-if="data">
       <v-sheet class="pa-5" rounded elevation="8">
       <EventForm
+          v-model="data!.data"
           submit-text="Save"
           :submit-disabled="submitDisabled"
-          v-model="data!.data"
           @submit="submit"
       />
       </v-sheet>

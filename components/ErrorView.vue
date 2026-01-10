@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type {NuxtError} from "#app";
 
 const {error, clearError} = defineProps<{
   error: Error | undefined
@@ -8,6 +7,7 @@ const {error, clearError} = defineProps<{
 
 function handleError() {
   clearError()
+  navigateTo('/')
 }
 
 console.error(error)
@@ -54,7 +54,7 @@ const dogs = [
   },
 ]
 
-var notFoundDog = ref<typeof dogs[0]>()
+const notFoundDog = ref<typeof dogs[0]>()
 onMounted(() => {
   notFoundDog.value = dogs[Math.floor(Math.random() * dogs.length)]
 })
@@ -66,12 +66,12 @@ onMounted(() => {
       <v-main>
         <div class="d-flex justify-center align-center text-center">
           <v-card
-              v-if="e.statusCode == 404"
+              v-if="e?.statusCode == 404"
               title="Page Not Found"
               max-width="600"
               elevation="16"
           >
-            <template v-slot:text>
+            <template #text>
               <p class="mb-4">Looks like you have went to a page which does not exist. Sorry about that. Here is a cute
                 picture of a dog to compensate.</p>
               <NuxtPicture
@@ -83,38 +83,39 @@ onMounted(() => {
               />
               <p v-if="notFoundDog" id="dog" aria-label="">
                 {{ notFoundDog.title }}
-                (<a :href="notFoundDog.attribution"
+                (<a
+                    :href="notFoundDog.attribution"
                     target="_blank"
                     rel="noopener noreferrer">Source</a>)
               </p>
             </template>
 
-            <template v-slot:actions>
-              <v-btn @click="handleError" text="Take me home"/>
+            <template #actions>
+              <v-btn text="Take me home" @click="handleError"/>
             </template>
           </v-card>
           <v-card
-              v-else-if="e.statusCode == 403"
+              v-else-if="e?.statusCode == 403"
               title="Forbidden"
               max-width="600"
               elevation="16"
           >
-            <template v-slot:text>
+            <template #text>
               <p class="mb-4">Looks like you have went to a page which you are not supposed to. Bad dog!</p>
             </template>
 
-            <template v-slot:actions>
-              <v-btn @click="handleError" text="Take me home"/>
+            <template #actions>
+              <v-btn text="Take me home" @click="handleError"/>
             </template>
           </v-card>
           <v-card
               v-else
-              :title="e.message"
+              :title="e?.message"
               max-width="600"
               elevation="16"
           >
-            <template v-slot:actions>
-              <v-btn @click="handleError" text="Take me home"/>
+            <template #actions>
+              <v-btn text="Take me home" @click="handleError"/>
             </template>
           </v-card>
         </div>

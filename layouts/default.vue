@@ -19,7 +19,7 @@ onMounted(async () => {
       swNeedsUpdate.value = true
     }
     reg.addEventListener('updatefound', () => {
-      let installing = reg.installing;
+      const installing = reg.installing;
       if (installing) {
         installing.addEventListener('statechange', () => {
           if (installing.state === 'installed') {
@@ -44,34 +44,48 @@ async function installWaitingServiceWorker() {
 </script>
 
 <template>
-  <div v-if="swNeedsUpdate" class="update-app d-flex justify-center pt-4">
-    <v-card class="ma-4 pa-2 text-center flex-grow-1" elevation="20" max-width="800">
-      <p class="mb-2">A new version of Queues is available.</p>
-      <v-btn color="primary" @click="installWaitingServiceWorker">Update</v-btn>
-    </v-card>
+  <div>
+    <div v-if="swNeedsUpdate" class="update-app d-flex justify-center pt-4">
+      <v-card class="ma-4 pa-2 text-center flex-grow-1" elevation="20" max-width="800">
+        <p class="mb-2">A new version of Queues is available.</p>
+        <v-btn color="primary" @click="installWaitingServiceWorker">Update</v-btn>
+      </v-card>
+    </div>
+    <v-app class="app">
+
+        <v-app-bar density="comfortable" class="app-bar">
+          <v-app-bar-nav-icon @click="drawer = !drawer" />
+          <v-app-bar-title tag="h1">{{ title }}</v-app-bar-title>
+        </v-app-bar>
+
+        <AppNavigationDrawer
+            v-model="drawer"
+        />
+
+      <ClientOnly>
+        <slot />
+      </ClientOnly>
+
+      <v-footer
+          class="
+          app-footer
+          text-center
+          d-flex
+          flex-column
+          ga-2
+          py-4
+          bg-transparent
+          justify-end
+">
+        <!--<div class="text-caption font-weight-regular opacity-60">-->
+        <!--</div>-->
+
+        <div class="app-footer-text py-2 px-4 rounded-lg">
+          &copy; Scotiacon {{ new Date().getFullYear() }}
+        </div>
+      </v-footer>
+    </v-app>
   </div>
-  <v-app class="app">
-
-      <v-app-bar density="comfortable" class="app-bar">
-        <v-app-bar-nav-icon @click="drawer = !drawer" />
-        <v-app-bar-title tag="h1">{{ title }}</v-app-bar-title>
-      </v-app-bar>
-
-      <AppNavigationDrawer
-          v-model="drawer"
-      />
-
-    <slot />
-
-    <v-footer class="app-footer text-center d-flex flex-column ga-2 py-4 bg-transparent">
-      <!--<div class="text-caption font-weight-regular opacity-60">-->
-      <!--</div>-->
-
-      <div>
-        {{ new Date().getFullYear() }} — <strong>Scotiacon</strong>
-      </div>
-    </v-footer>
-  </v-app>
 </template>
 
 <style scoped>
@@ -89,6 +103,9 @@ async function installWaitingServiceWorker() {
   color: rgb(var(--v-theme-app-footer-color)) !important;
 }
 
+.app-footer-text {
+  background-color: rgba(0, 0, 0, 0.5);
+}
 
 .update-app {
   position: fixed;

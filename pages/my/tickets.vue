@@ -9,9 +9,10 @@ useHead({
   title: `My tickets`
 })
 
-let page = usePagination()
+const page = ref(usePagination())
 const subject = useSubject()
-const {data: tickets, refresh: refreshTickets, error} = useMyTickets(subject.value, page.value)
+const { data: tickets, refresh: refreshTickets } = useMyTickets(subject.value, page.value)
+
 
 async function refresh() {
   await refreshTickets({cause: "refresh:manual"})
@@ -20,24 +21,35 @@ async function refresh() {
 </script>
 
 <template>
-  <v-main>
-    <v-container>
-      <v-row dense>
-        <v-col v-if="tickets && tickets.data.length > 0" role="list" cols="12" v-for="ticket in tickets.data">
+  <VMain>
+    <VContainer>
+      <VRow dense>
+        <VCol v-if="!tickets?.data.length">
+          <VAlert type="info">
+            <VAlertTitle>Oh no!</VAlertTitle>
+            <p>You have no tickets</p>
+          </VAlert>
+        </VCol>
+        <VCol
+              v-for="ticket in tickets?.data"
+              :key="ticket.id"
+              role="list"
+              cols="12"
+        >
           <TicketCard role="listitem" :ticket="ticket" @refresh="refresh"/>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12">
-          <v-pagination
+        </VCol>
+      </VRow>
+      <VRow v-if="!!tickets?.data.length">
+        <VCol cols="12">
+          <VPagination
               v-model="page"
               :length="tickets?.totalPages ?? 0"
               class="my-2"
           />
-        </v-col>
-      </v-row>
-    </v-container>
-  </v-main>
+        </VCol>
+      </VRow>
+    </VContainer>
+  </VMain>
 </template>
 
 <style scoped>

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type {Dayjs} from "dayjs";
 
 const dayjs = useDayjs()
 
-const {id, title, description, openTime, closeTime} = defineProps<{
+const {id, title, description, openTime = "", closeTime = ""} = defineProps<{
   id: string
   title: string
   description: string

@@ -14,7 +14,7 @@ useAppPermissions(await fetchPermissions())
   <NuxtLoadingIndicator/>
   <NuxtErrorBoundary>
     <template #error="{error, clearError}">
-      <ErrorView :error="error" :clearError="clearError"/>
+      <ErrorView :error="error" :clear-error="clearError"/>
     </template>
     <NuxtLayout>
       <NuxtPage/>

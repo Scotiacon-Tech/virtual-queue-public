@@ -1,12 +1,24 @@
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import dotenv from 'dotenv'
+import path from 'path'
+
+// Determine which .env file to load
+const envFile =
+    process.env.NODE_ENV === 'development'
+        ? '.env.development'
+        : '.env.production'
+
+// Load the relevant .env file
+dotenv.config({ path: path.resolve(process.cwd(), envFile) })
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: {
-    enabled: true,
-    timeline: { enabled: true },
+    enabled: process.env.NODE_ENV === 'development',
+    timeline: { enabled: process.env.NODE_ENV === 'development' },
   },
+  debug: process.env.NODE_ENV === 'development',
 
   modules: [
     '@nuxt/content',
@@ -17,7 +29,6 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     'nuxt-security',
     'nuxt-svgo',
-    '@nuxtjs/google-fonts',
     'nuxt-api-party',
     'dayjs-nuxt',
     '@vueuse/nuxt',
@@ -25,6 +36,7 @@ export default defineNuxtConfig({
     'nuxt-oidc-auth',
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         config.plugins.push(vuetify({ autoImport: true }))
       })
@@ -54,7 +66,7 @@ export default defineNuxtConfig({
       short_name: 'ScotiaQueues',
       theme_color: '#f3900a',
       display: 'minimal-ui',
-      start_url: '/',
+      start_url: '',
       icons: [ // TODO
         {
           src: '/logos/192x192.png',
@@ -103,13 +115,18 @@ export default defineNuxtConfig({
         pkce: true,
         tokenRequestType: 'form-urlencoded',
         scope: ['openid', 'email', 'profile', 'convention_references'],
-        authorizationUrl: 'https://auth.scotiacon.org.uk/connect/auth',
-        tokenUrl: 'https://auth-api.scotiacon.org.uk/connect/token',
-        userInfoUrl: 'https://auth-api.scotiacon.org.uk/connect/userinfo',
-        logoutUrl: 'https://auth-api.scotiacon.org.uk/connect/logout',
-        redirectUri: 'http://localhost:3000/auth/oidc/callback',
+        authorizationUrl: process.env.NUXT_OIDC_PROVIDERS_OIDC_AUTHORIZATION_URL || 'https://auth.scotiacon.org.uk/connect/auth',
+        tokenUrl: process.env.NUXT_OIDC_PROVIDERS_OIDC_TOKEN_URL || 'https://auth-api.scotiacon.org.uk/connect/token',
+        userInfoUrl: process.env.NUXT_OIDC_PROVIDERS_OIDC_USERINFO_URL || 'https://auth-api.scotiacon.org.uk/connect/userinfo',
+        logoutUrl: process.env.NUXT_OIDC_PROVIDERS_OIDC_LOGOUT_URL || `https://auth.scotiacon.org.uk/connect/logout?post_logout_redirect_uri=${process.env.NUXT_OIDC_PROVIDERS_OIDC_LOGOUT_REDIRECT_URI || 'http://localhost:3000/'}`,
+        redirectUri: process.env.NUXT_OIDC_PROVIDERS_OIDC_REDIRECT_URI || 'http://localhost:3000/auth/oidc/callback',
         exposeAccessToken: true,
         userNameClaim: 'preferred_username',
+        sessionConfiguration: {
+          expirationCheck: true,
+          automaticRefresh: true,
+          expirationThreshold: 240
+        }
       },
     },
   },
@@ -176,13 +193,6 @@ export default defineNuxtConfig({
       blackColor: 'currentColor',
       whiteColor: 'transparent',
     },
-  },
-
-  googleFonts: {
-    download: true,
-    families: {
-      Outfit: true
-    }
   },
 
   dayjs: {

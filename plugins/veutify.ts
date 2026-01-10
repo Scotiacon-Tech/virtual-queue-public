@@ -5,7 +5,6 @@ import 'vuetify/styles'
 import {createVuetify, type ThemeDefinition} from 'vuetify'
 import { md1 } from 'vuetify/blueprints'
 
-import colors from 'vuetify/util/colors'
 import {VPie} from "vuetify/labs/VPie";
 
 const scotiacon2026: ThemeDefinition = {dark: false,
