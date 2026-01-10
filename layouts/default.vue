@@ -64,12 +64,22 @@ async function installWaitingServiceWorker() {
 
       <slot />
 
-      <v-footer class="app-footer text-center d-flex flex-column ga-2 py-4 bg-transparent">
+      <v-footer
+          class="
+          app-footer
+          text-center
+          d-flex
+          flex-column
+          ga-2
+          py-4
+          bg-transparent
+          justify-end
+">
         <!--<div class="text-caption font-weight-regular opacity-60">-->
         <!--</div>-->
 
-        <div>
-          {{ new Date().getFullYear() }} — <strong>Scotiacon</strong>
+        <div class="app-footer-text py-2 px-4 rounded-lg">
+          &copy; Scotiacon {{ new Date().getFullYear() }}
         </div>
       </v-footer>
     </v-app>
@@ -91,6 +101,9 @@ async function installWaitingServiceWorker() {
   color: rgb(var(--v-theme-app-footer-color)) !important;
 }
 
+.app-footer-text {
+  background-color: rgba(0, 0, 0, 0.5);
+}
 
 .update-app {
   position: fixed;
