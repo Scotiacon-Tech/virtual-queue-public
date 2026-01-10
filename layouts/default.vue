@@ -62,7 +62,9 @@ async function installWaitingServiceWorker() {
             v-model="drawer"
         />
 
-      <slot />
+      <ClientOnly>
+        <slot />
+      </ClientOnly>
 
       <v-footer
           class="

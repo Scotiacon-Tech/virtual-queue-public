@@ -82,7 +82,7 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
       status: isOpen(el.startTime, el.endTime) ? 'open' : 'closed',
     }))
   } catch (e) {
-
+    console.warn(e)
   } finally {
     loading.value = false
   }
@@ -100,26 +100,26 @@ async function loadItems({page, itemsPerPage, sortBy, groupBy, search}: {
           :loading="loading"
           :search="searchDebounce"
           item-value="id"
-          @update:options="loadItems"
           mobile-breakpoint="sm"
+          @update:options="loadItems"
       >
-        <template v-slot:top>
+        <template #top>
           <v-text-field
-              label="Search by name"
               v-model="search"
+              label="Search by name"
               class="pa-3 mt-3"
               density="compact"
               prepend-icon="mdi-magnify"
               hide-details
-          ></v-text-field>
+          />
         </template>
 
-        <template v-slot:item.status="{ item }">
+        <template #item.status="{ item }">
           <v-chip v-if="item.status == 'open'" rounded color="green">Open</v-chip>
           <v-chip v-else rounded color="red">Closed</v-chip>
         </template>
 
-        <template v-slot:item.actions="{ item }">
+        <template #item.actions="{ item }">
           <div class="d-flex ga-2 justify-end">
             <v-btn
                 :to="`/manage/tickets/scan/event/${item.id}`"
