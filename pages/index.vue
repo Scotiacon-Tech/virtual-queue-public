@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import {useEventDataUpcoming} from "~/composables/api/events";
 import UpcomingEvents from "~/components/UpcomingEvents.vue";
 
 definePageMeta({
@@ -8,10 +7,16 @@ definePageMeta({
 useHead({
   title: `Queues`
 })
-onMounted(() => {
-  requireAppPermissions([
-    'canDoSomething'
-  ])
+onMounted(async () => {
+  try {
+    requireAppPermissions([
+      'canDoSomething'
+    ])
+  } catch (e) {
+    console.error("Error requiring app permissions", e)
+    const oidc = useOidcAuth()
+    await oidc.logout()
+  }
 })
 const canListEvents = hasAppPermissions(['canListEvents'])
 const canListTickets = hasAppPermissions(['canListTickets'])
@@ -30,8 +35,8 @@ const canListTickets = hasAppPermissions(['canListTickets'])
         </v-row>
 
         <ActiveTickets v-if="canListTickets">
-          <template v-slot:after>
-            <v-divider class="my-6"></v-divider>
+          <template #after>
+            <v-divider class="my-6" />
           </template>
         </ActiveTickets>
         <UpcomingEvents v-if="canListEvents" />

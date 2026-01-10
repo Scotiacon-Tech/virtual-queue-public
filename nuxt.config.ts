@@ -105,7 +105,7 @@ export default defineNuxtConfig({
         authorizationUrl: 'https://auth.scotiacon.org.uk/connect/auth',
         tokenUrl: 'https://auth-api.scotiacon.org.uk/connect/token',
         userInfoUrl: 'https://auth-api.scotiacon.org.uk/connect/userinfo',
-        logoutUrl: 'https://auth-api.scotiacon.org.uk/connect/logout',
+        logoutUrl: 'https://auth.scotiacon.org.uk/connect/logout?post_logout_redirect_uri=http://localhost:3000/',
         redirectUri: 'http://localhost:3000/auth/oidc/callback',
         exposeAccessToken: true,
         userNameClaim: 'preferred_username',

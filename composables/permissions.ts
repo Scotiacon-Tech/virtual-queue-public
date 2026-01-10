@@ -1,6 +1,6 @@
 import {getCapabilities} from "~/composables/api/capabilities";
 
-class PermissionsError extends Error {}
+//class PermissionsError extends Error {}
 
 export type AppPermissions = {
     canDoSomething: boolean
@@ -78,6 +78,7 @@ export const fetchPermissions = async (): Promise<AppPermissions> => {
             ].some(el => el),
         }
     } catch (error) {
+        console.error("Error fetching permissions", error)
         return {
             canDoSomething: false,
             canCreateEvent: false,

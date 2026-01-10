@@ -1,6 +1,3 @@
-/// <reference lib="webworker" />
-/* eslint-disable no-restricted-globals */
-
 import {clientsClaim} from "workbox-core";
 
 declare let self: ServiceWorkerGlobalScope
@@ -12,7 +9,7 @@ type ActiveTicketsV1PushEvent = {
 
 async function clearNotifications(tag: string) {
     const notifications = await self.registration.getNotifications({tag})
-    for (let n of notifications) {
+    for (const n of notifications) {
         n.close()
     }
 }
@@ -33,8 +30,8 @@ self.addEventListener('notificationclick', (event) => {
         self.clients.matchAll({
             type: "window"
         }).then(function (clientList) {
-            for (var i = 0; i < clientList.length; i++) {
-                var client = clientList[i];
+            for (let i = 0; i < clientList.length; i++) {
+                const client = clientList[i];
                 if (client && client.url == '/' && 'focus' in client)
                     return client.focus();
             }
@@ -63,7 +60,7 @@ self.addEventListener('push', event => {
                         {
                             body: 'This ticket will only be valid for 1 hour.',
                             tag: notifyWhenTicketActiveTag,
-                            // @ts-ignore: experimental, not available on firefox and safari
+                            // @ts-expect-error: experimental, not available on firefox and safari
                             renotify: true,
                         }
                     )
@@ -75,7 +72,7 @@ self.addEventListener('push', event => {
                         {
                             body: 'Tickets will only be valid for 1 hour.',
                             tag: notifyWhenTicketActiveTag,
-                            // @ts-ignore: experimental, not available on firefox and safari
+                            // @ts-expect-error: experimental, not available on firefox and safari
                             renotify: true
                         }
                     )
