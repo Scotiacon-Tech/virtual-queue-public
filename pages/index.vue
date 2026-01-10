@@ -29,7 +29,7 @@ const canListTickets = hasAppPermissions(['canListTickets'])
       <v-sheet class="pa-5" rounded elevation="8">
         <v-row justify="center" align="center" no-gutters class="mb-12">
           <v-col cols="6" class="text-center logo">
-            <svgo-virtual-queues-logo title="Virtual Queues" filled="false" style="width: 100%; height: auto; max-height: 150px;"/>
+            <svgo-virtual-queues-logo title="Virtual Queues" :filled="false" style="width: 100%; height: auto; max-height: 150px;"/>
             <h1>Queues</h1>
           </v-col>
         </v-row>

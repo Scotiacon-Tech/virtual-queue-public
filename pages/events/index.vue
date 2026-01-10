@@ -14,7 +14,7 @@ requireAppPermissions([
 ])
 const router = useRouter()
 
-let page = usePagination()
+const page = ref(usePagination())
 
 const {data, error, pending} = await useEventDataPage(page.value, 25);
 
@@ -32,11 +32,15 @@ watch(page, () => {
         <EventSummaryCardSkeleton/>
         <EventSummaryCardSkeleton/>
       </v-col>
-      <v-col v-if="!pending" role="list" cols="12">
+      <v-col v-if="!pending && data" role="list" cols="12">
+        <VAlert v-if="!data.data.length" type="info">
+          <VAlertTitle>Nothing to see here!</VAlertTitle>
+          <p>No events are currently available.</p>
+        </VAlert>
         <EventSummaryCard
-            v-if="data != null"
             v-for="event in data.data"
             :id="event.id"
+            :key="event.id"
             :title="event.name"
             :open-time="event.startTime"
             :close-time="event.endTime"
@@ -58,7 +62,7 @@ watch(page, () => {
             v-model="page"
             :length="data?.totalPages || 0"
             class="my-2"
-        ></v-pagination>
+        />
       </v-col>
     </v-row>
   </v-container>
