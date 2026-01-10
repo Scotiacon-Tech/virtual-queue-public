@@ -23,7 +23,7 @@ const {data, error, pending} = useEventDataUpcoming(start, now)
           :title="event.name"
           :open-time="event.startTime"
           :close-time="event.endTime"
-          description="Lorem ipsum dolor sit amet consectetur, adipisicing elit.?"
+          :description="event.description"
       />
     </div>
     <v-alert

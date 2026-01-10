@@ -44,7 +44,7 @@ watch(page, () => {
             :title="event.name"
             :open-time="event.startTime"
             :close-time="event.endTime"
-            description="Lorem ipsum dolor sit amet consectetur, adipisicing elit.?"
+            :description="event.description"
         />
       </v-col>
       <v-col v-if="error">
