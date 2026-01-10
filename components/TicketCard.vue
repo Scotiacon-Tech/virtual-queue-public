@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import {
-  fetchUpdateTicket, type TicketState,
-} from "~/composables/api/events";
 import TicketView from "~/components/TicketView.vue";
 import {useTicketOps} from "~/composables/tickets";
+import type {TicketState} from "~/composables/api/events";
 
 const {
   holdTicket,
@@ -12,7 +10,7 @@ const {
   rejoinTicketBusy
 } = useTicketOps()
 
-const {ticket} = defineProps<{
+const {ticket = undefined} = defineProps<{
   ticket?: {
     readonly id: string
     readonly name: string

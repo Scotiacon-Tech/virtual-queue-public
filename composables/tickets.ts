@@ -1,4 +1,4 @@
-import {fetchCreateTicket, fetchUpdateTicket} from "~/composables/api/events";
+import {fetchUpdateTicket} from "~/composables/api/events";
 
 export const useTicketOps = ()  => {
     const busyHolding = ref<boolean>(false)
