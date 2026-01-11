@@ -12,9 +12,9 @@ requireAppPermissions(['canManageTickets', 'canViewTicket'])
 
 const dayjs = useDayjs();
 const route = useRoute();
-let id = route.params.id as string
+const id = route.params.id as string
 
-const {data, refresh, error} = await useGetTicketById(id, {includeEvent: true})
+const {data, refresh} = await useGetTicketById(id, {includeEvent: true})
 
 
 const copyIdText = ref<string>("Copy");
@@ -58,6 +58,18 @@ async function consume(id: string) {
   try {
     busyConsuming.value = true;
     await fetchUpdateTicket(id, {state: 'Consumed'})
+    await refresh()
+  } catch (error) {
+    console.error("Error Activating", error)
+  } finally {
+    busyConsuming.value = false;
+  }
+}
+
+async function setExpiry(id: string, date : Date) {
+  try {
+    busyConsuming.value = true;
+    await fetchUpdateTicket(id, {expires: date})
     await refresh()
   } catch (error) {
     console.error("Error Activating", error)
@@ -173,6 +185,7 @@ function revokeDialogCancel() {
           class="my-4"
           block
           :disabled="data.state !== 'Active' || (data.state === 'Active' && !data.expires)"
+          @click="() => setExpiry(id, dayjs(data?.expires).add(1, 'hour').toDate())"
         >
           Set Expiry to Now + 1 Hour
         </v-btn>
@@ -191,7 +204,7 @@ function revokeDialogCancel() {
               title="Revoke ticket"
               :subtitle="`Do you want to revoke the ticket for ${data!.owner}?`"
           >
-            <template v-slot:text>
+            <template #text>
               <div class="d-flex flex-column ga-4">
                 <p>
                   This will make this ticket unusable. Another ticket can be requested.
@@ -200,9 +213,9 @@ function revokeDialogCancel() {
             </template>
 
             <v-card-actions class="bg-surface-light">
-              <v-btn text="Cancel" @click="revokeDialogCancel"></v-btn>
-              <v-spacer></v-spacer>
-              <v-btn text="Revoke" color="red" variant="elevated" @click="revokeDialogConfirm"></v-btn>
+              <v-btn text="Cancel" @click="revokeDialogCancel" />
+              <v-spacer />
+              <v-btn text="Revoke" color="red" variant="elevated" @click="revokeDialogConfirm" />
             </v-card-actions>
           </v-card>
         </v-dialog>

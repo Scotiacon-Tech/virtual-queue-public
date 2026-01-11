@@ -11,6 +11,7 @@ type EventUpdate = components['requestBodies']['EventUpdateRequest']['content'][
 
 
 export type TicketUpdates = {
+    expires?: Date | string
     state?: UpdateTicketState
 }
 type GetEventsOptions = {
@@ -49,7 +50,7 @@ const transformTicketPage = (res: TicketPageResponseJSON) => {
     return {
         data: res.data.map(item => ({
             ...transformTicket(item),
-            event: res.related?.event?.find(event => event.id === item.eventId)!,
+            event: res.related?.event?.find(event => event.id === item.eventId),
         })),
         totalItems: res.total_items,
         totalPages,
@@ -128,6 +129,7 @@ export const fetchEventDataPage = (pageOffset: number, pageSize: number, opts?: 
             "filter[invisible]": opts?.includeInvisible,
             "filter[name_like]": opts?.nameLike,
         },
+        cache: import.meta.server,
     }).then(transformEventPage)
 
 export const useEventDataPage = (pageOffset: number, pageSize: number, opts?: GetEventsOptions) =>
@@ -141,6 +143,7 @@ export const useEventDataPage = (pageOffset: number, pageSize: number, opts?: Ge
             "filter[invisible]": opts?.includeInvisible,
             "filter[name_like]": opts?.nameLike,
         },
+        cache: import.meta.server,
         transform: transformEventPage
     })
 
@@ -155,6 +158,7 @@ export const useEventDataUpcoming = (start: dayjs.Dayjs, end: dayjs.Dayjs) =>
             "filter[end_time_gte]": end.toISOString(),
             sort: ['end_time']
         },
+        cache: import.meta.server,
         transform: transformEventPage
     })
 
@@ -165,7 +169,8 @@ export const fetchCreateEvent = (newEvent: NewEvent) =>
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
-        }
+        },
+        cache: false,
     })
 
 export const fetchUpdateEvent = (id: string, updatedEvent: EventUpdate) =>
@@ -176,13 +181,15 @@ export const fetchUpdateEvent = (id: string, updatedEvent: EventUpdate) =>
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
-        }
+        },
+        cache: false,
     })
 
 export const useGetEventById = (id: string) =>
     useQueuesBackendData('/event/{id}', {
         method: 'get',
         path: {id},
+        cache: import.meta.server,
     })
 
 export const fetchGetAllEvents = () =>
@@ -190,7 +197,8 @@ export const fetchGetAllEvents = () =>
         method: 'get',
         query: {
             "page[size]": -1
-        }
+        },
+        cache: import.meta.server,
     })
 
 export const fetchGetEventsByName = (name: string) =>
@@ -198,13 +206,15 @@ export const fetchGetEventsByName = (name: string) =>
         method: 'get',
         query: {
             "filter[name_like]": `%${name}%`
-        }
+        },
+        cache: import.meta.server,
     })
 
 export const fetchGetEventById = (id: string) =>
     $queuesBackend('/event/{id}', {
         method: 'get',
-        path: {id}
+        path: {id},
+        cache: import.meta.server,
     })
 
 export const useGetAllOpenTicketsForEvent = (id: string, opts?: GetAllOpenTicketsOptions) =>
@@ -217,57 +227,64 @@ export const useGetAllOpenTicketsForEvent = (id: string, opts?: GetAllOpenTicket
             "filter[owner]": opts?.owner,
             "include": ["event"]
         },
-        cache: opts?.cache,
+        cache: import.meta.server,
         transform: transformTicketPage
     })
 
 export const fetchCreateTicket = (eventId: string) =>
     $queuesBackend('/ticket', {
         method: 'put',
-        body: {eventId}
+        body: {eventId},
+        cache: false,
     })
 
 export const useGetTicketById = (ticketId: string, opts?: GetTicketByIDOptions) => {
-    let include: ('event')[] = []
+    const include: ('event')[] = []
     if (opts?.includeEvent) {
         include.push('event')
     }
+
     return useQueuesBackendData('/ticket/{id}', {
         method: 'get',
         path: {id: ticketId},
         query: {
             include: include as Readonly<('event')[]>
         },
+        cache: import.meta.server,
         transform: transformTicketItem
     })
 }
 
-export const fetchGetTicket = (ticketId: string, opts?: GetTicketByIDOptions) => {
-    let include: ('event')[] = []
+export const fetchGetTicket = async (ticketId: string, opts?: GetTicketByIDOptions) => {
+    const include: ('event')[] = []
     if (opts?.includeEvent) {
         include.push('event')
     }
-    return $queuesBackend("/ticket/{id}", {
+    const res = await $queuesBackend("/ticket/{id}", {
         method: 'get',
         path: {id: ticketId},
         query: {
             include: include as Readonly<('event')[]>
-        }
-    }).then(transformTicketItem);
+        },
+        cache: false,
+    });
+    return transformTicketItem(res);
 }
 
 export const fetchUpdateTicket = (ticketId: string, updates: TicketUpdates) =>
     $queuesBackend("/ticket/{id}", {
         method: 'patch',
         path: {id: ticketId},
-        body: updates
+        body: updates,
+        cache: false,
     }).then(transformTicketItem)
 
 export const fetchDeleteTicket = (ticketId: string) =>
     $queuesBackend("/ticket/{id}", {
         method: 'delete',
         path: {id: ticketId},
-    }).then(transformTicketItem)
+        cache: false,
+    })
 
 export const fetchReleaseTickets = (eventId: string, amount?: number) =>
     $queuesBackend('/event/{id}/activate-tickets', {
@@ -275,13 +292,15 @@ export const fetchReleaseTickets = (eventId: string, amount?: number) =>
         path: {id: eventId},
         body: {
             amount: amount || 25,
-        }
+        },
+        cache: false,
     })
 
 export const useGetEventTicketStatistics = (eventId: string) =>
     useQueuesBackendData('/event/{id}/ticket-stats', {
         method: 'get',
         path: {id: eventId},
+        cache: import.meta.server,
     })
 
 export const useMyTickets = (subject: string | undefined, page: number) => {
@@ -297,6 +316,7 @@ export const useMyTickets = (subject: string | undefined, page: number) => {
             "filter[state]": ["Requested", "OnHold", "Active", "CheckedIn"],
             "filter[owner]": subject
         },
+        cache: import.meta.server,
         transform: transformTicketPage
     })
 }
@@ -310,6 +330,7 @@ export const useMyActiveTickets = (subject: string | undefined, opts?: { pageSiz
             "filter[state]": ["Active"],
             "filter[owner]": subject
         },
+        cache: import.meta.server,
         transform: transformTicketPage
     })
 
@@ -328,5 +349,6 @@ export const fetchTicketDataPage = (pageOffset: number, pageSize: number, opts?:
             "filter[name]": opts?.ticketNumber,
             "filter[event_id]": opts?.eventId,
             "filter[badge_id_like]": opts?.badgeIdLike,
-        }
+        },
+        cache: import.meta.server,
     }).then(transformTicketPage);
