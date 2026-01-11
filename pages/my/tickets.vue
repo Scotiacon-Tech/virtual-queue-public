@@ -11,8 +11,7 @@ useHead({
 
 const page = ref(usePagination())
 const subject = useSubject()
-const { data: tickets, refresh: refreshTickets } = useMyTickets(subject.value, page.value)
-
+const { data: tickets, refresh: refreshTickets } = await useMyTickets(subject.value, page.value)
 
 async function refresh() {
   await refreshTickets({cause: "refresh:manual"})
@@ -25,7 +24,7 @@ async function refresh() {
     <VContainer>
       <VRow dense>
         <VCol v-if="!tickets?.data.length">
-          <VAlert type="info">
+          <VAlert type="warning" color="primary">
             <VAlertTitle>Oh no!</VAlertTitle>
             <p>You have no tickets</p>
           </VAlert>

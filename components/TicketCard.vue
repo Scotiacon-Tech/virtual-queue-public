@@ -37,8 +37,10 @@ const emit = defineEmits<{
     <div class="d-flex justify-center mb-6">
       <TicketView :ticket="ticket" qr-code />
     </div>
-    <div>
-      <h2 class="text-h6 mb-2">Actions</h2>
+    <div v-if="ticket.state in ['Requested', 'OnHold']">
+      <h2 class="text-h6 mb-2">
+        Actions
+      </h2>
       <v-btn v-if="ticket.state == 'Requested'" :loading="holdTicketBusy" @click="() => {holdTicket(ticket.id); emit('refresh', ticket.id)}">
         Hold My Place
       </v-btn>
